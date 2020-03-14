@@ -24,3 +24,12 @@ class AbstractWrapper(abc.ABC):
 
     def is_metal(self, environment: str) -> bool:
         return environment == self.BARE_METAL
+
+
+class DummyWrapper(AbstractWrapper):
+
+    def collect(self) -> typing.List[GaugeMetricFamily]:
+        return []
+
+
+DUMMY_SINGLETON_WRAPPER = DummyWrapper()

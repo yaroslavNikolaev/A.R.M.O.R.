@@ -21,7 +21,7 @@ class K8Releases(object):
         parser = PyQuery(response.read().decode("utf-8"))
         page_versions = parser("[href]")("[title]").text()
         releases = page_versions.lstrip().split(" ")
-        # not necessary last version in this page -> do find it/
+        # not necessary last version in this page -> do find highest versions and
         result = []
         for release in releases:
             if not re.search(self.stable_versions, release):
