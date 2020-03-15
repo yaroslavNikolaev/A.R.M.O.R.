@@ -21,8 +21,12 @@ if __name__ == '__main__':
     azure.add_argument("-aks", "--aks", help="Azure Kubernetes service name", )
     azure.add_argument("-arg", "--azureResourceGroup", help="Azure Resource group name", type=str)
     azure.add_argument("-as", "--azureSubscription",  help="Azure Subscription name", type=str)
-    azure.add_argument("-at", "--azuretoken", help="Azure access token", type=str)
+    azure.add_argument("-at", "--azuretoken", help="Azure access token [az account get-access-token]", type=str)
     # gcp
+    gcp = parser.add_argument_group("gcp")
+    azure.add_argument("-gp", "--gcpproject", help="Gcp project", )
+    azure.add_argument("-gz", "--gcpzone", help="Gcp zone", type=str)
+    azure.add_argument("-gt", "--gcptoken", help="Gcp token [gcloud auth print-access-token]", type=str)
     # aws
 
     # read arguments from the command line

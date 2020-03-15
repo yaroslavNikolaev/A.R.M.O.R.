@@ -4,6 +4,7 @@ from prometheus_client.core import GaugeMetricFamily
 from party3rd.kubernetes_internal import K8Application
 from party3rd.kubernetes_external import K8Releases
 from azure.kubernetes import K8Azure
+from gcp.kubernetes import K8GCP
 
 
 class KubernetesWrapper(AbstractWrapper):
@@ -16,7 +17,7 @@ class KubernetesWrapper(AbstractWrapper):
         if super().is_aws(args.environment):
             raise BaseException("not supported yet")
         elif super().is_gcp(args.environment):
-            raise BaseException("not supported yet")
+            self.k8_external = K8GCP(args)
         elif super().is_azure(args.environment):
             self.k8_external = K8Azure(args)
         elif super().is_metal(args.environment):
