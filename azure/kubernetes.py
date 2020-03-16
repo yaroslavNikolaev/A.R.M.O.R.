@@ -1,6 +1,5 @@
 from http.client import HTTPSConnection
 from utils.versions import NodeVersion
-import re
 import typing
 import json
 
@@ -10,7 +9,6 @@ class K8Azure(object):
     # todo raise request to azure to provide API without auth and link to existing env, only current version 
     template = "/subscriptions/{}/resourceGroups/{}/providers/Microsoft.ContainerService/managedClusters/{}/upgradeProfiles/default?api-version=2020-02-01"
     available_updates: str
-    stable_versions = '^v\d+\.\d+\.\d+$'
     auth: map
 
     def __init__(self, args):
@@ -26,8 +24,9 @@ class K8Azure(object):
         releases = resp['properties']['controlPlaneProfile']['upgrades']
         result = []
         for release in releases:
-            release_version = NodeVersion(release['kubernetesVersion'], "preview")
+            if 'isPreview' in release and release['isPreview']:
+                continue
+            release_version = NodeVersion(release['kubernetesVersion'], "k8")
             result += [release_version]
             break
-
         return result

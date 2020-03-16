@@ -5,6 +5,7 @@ from party3rd.kubernetes_internal import K8Application
 from party3rd.kubernetes_external import K8Releases
 from azure.kubernetes import K8Azure
 from gcp.kubernetes import K8GCP
+from utils.versions import NodeVersion
 
 
 class KubernetesWrapper(AbstractWrapper):
@@ -27,12 +28,18 @@ class KubernetesWrapper(AbstractWrapper):
     def collect(self) -> typing.List[GaugeMetricFamily]:
         if not hasattr(self, "k8_internal"):
             return []
-        external_version = self.k8_external.collect()
+        external_versions = self.k8_external.collect()
         internal_versions = self.k8_internal.collect()
         result = []
-        for version in internal_versions:
-            diff = external_version[0] - version
-            metric = GaugeMetricFamily("k8_info", 'Kubernetes version', labels=["application", "node", "armor"])
-            metric.add_metric(["kubernetes", version.node_name, "armor"], diff.get_float_value())
-            result += [metric]
+        for internal_version in internal_versions:
+            is_master = internal_version.node_name == "master"
+            filter_function = self.__filter_master_version if is_master else self.__filter_node_versions
+            result += super().extract_metrics(internal_version, filter(filter_function, external_versions))
         return result
+
+
+    def __filter_master_version(self, version_to_filter: NodeVersion) -> bool:
+        return version_to_filter.node_name == "master" or version_to_filter.node_name == "k8"
+
+    def __filter_node_versions(self, version_to_filter: NodeVersion) -> bool:
+        return version_to_filter.node_name == "nodes" or version_to_filter.node_name == "k8"

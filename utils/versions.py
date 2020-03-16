@@ -1,3 +1,5 @@
+from copy import copy
+
 def _extract_numbers(version: str) -> int:
     result = ""
     for char in version:
@@ -10,12 +12,14 @@ class Version(object):
     major: int
     minor: int
     release: int
+    built: int
 
     def __init__(self, version: str):
         versions = version.split(".")
         self.major = _extract_numbers(versions[0])
         self.minor = _extract_numbers(versions[1])
-        self.release = _extract_numbers(versions[2].split("-")[0])
+        self.release = _extract_numbers(versions[2])
+        self.built = _extract_numbers(versions[3]) if len(versions) > 3 else 0
 
     def __sub__(self, other):
         major = self.major - other.major
@@ -35,7 +39,12 @@ class NodeVersion(Version):
         self.node_name = node
 
     def __sub__(self, other):
-        major = self.major - other.major
-        minor = self.minor - other.minor if major == 0 else 0
-        release = self.release - other.release if minor == 0 else self.release
-        return NodeVersion("v" + str(major) + "." + str(minor) + "." + str(release), other.node_name)
+        result = copy(ZERO_VERSION)
+        result.major = self.major - other.major
+        result.minor = self.minor - other.minor
+        result.release = self.release - other.release
+        result.built = self.built - other.built
+        return result
+
+
+ZERO_VERSION = NodeVersion("v0.0.0", "")

@@ -26,7 +26,7 @@ class K8Releases(object):
         for release in releases:
             if not re.search(self.stable_versions, release):
                 continue
-            release_version = NodeVersion(release, "release")
+            release_version = NodeVersion(release, "k8")
             result += [release_version]
             break
 
