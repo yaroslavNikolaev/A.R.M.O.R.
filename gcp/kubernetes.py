@@ -1,10 +1,11 @@
 from http.client import HTTPSConnection
 from utils.versions import NodeVersion
+from utils.versions import VersionCollector
 import typing
 import json
 
 
-class K8GCP(object):
+class K8GCP(VersionCollector):
     azure = "container.googleapis.com"
     # todo raise request to gcp to provide API without auth and link to existing env, only current version
     template = "/v1/projects/{}/zones/{}/serverconfig"

@@ -1,12 +1,13 @@
 from http.client import HTTPSConnection
 from utils.versions import NodeVersion
+from utils.versions import VersionCollector
 from pyquery import PyQuery
 import re
 import typing
 import ssl
 
 
-class K8Releases(object):
+class K8Releases(VersionCollector):
     git = "github.com"
     kubernetes_release = "/kubernetes/kubernetes/releases"
     stable_versions = '^v\d+\.\d+\.\d+$'

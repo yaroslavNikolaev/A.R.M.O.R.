@@ -1,4 +1,7 @@
+import abc
+import typing
 from copy import copy
+
 
 def _extract_numbers(version: str) -> int:
     result = ""
@@ -21,12 +24,6 @@ class Version(object):
         self.release = _extract_numbers(versions[2])
         self.built = _extract_numbers(versions[3]) if len(versions) > 3 else 0
 
-    def __sub__(self, other):
-        major = self.major - other.major
-        minor = self.minor - other.minor if major == 0 else 0
-        release = self.release - other.release if minor == 0 else self.release
-        return Version("v" + major + "." + minor + "." + release)
-
     def get_float_value(self):
         return self.major * 100 + self.minor + self.release / 100
 
@@ -45,6 +42,13 @@ class NodeVersion(Version):
         result.release = self.release - other.release
         result.built = self.built - other.built
         return result
+
+
+class VersionCollector(abc.ABC):
+
+    @abc.abstractmethod
+    def collect(self) -> typing.List[NodeVersion]:
+        pass
 
 
 ZERO_VERSION = NodeVersion("v0.0.0", "")

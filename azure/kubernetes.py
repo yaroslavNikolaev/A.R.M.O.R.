@@ -1,10 +1,11 @@
 from http.client import HTTPSConnection
 from utils.versions import NodeVersion
+from utils.versions import VersionCollector
 import typing
 import json
 
 
-class K8Azure(object):
+class K8Azure(VersionCollector):
     azure = "management.azure.com"
     # todo raise request to azure to provide API without auth and link to existing env, only current version 
     template = "/subscriptions/{}/resourceGroups/{}/providers/Microsoft.ContainerService/managedClusters/{}/upgradeProfiles/default?api-version=2020-02-01"

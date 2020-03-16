@@ -1,5 +1,6 @@
 from http.client import HTTPSConnection
 from utils.versions import NodeVersion
+from utils.versions import VersionCollector
 import json
 import ssl
 import typing
@@ -44,7 +45,7 @@ class _K8Worker(object):
         return result
 
 
-class K8Application(object):
+class K8Application(VersionCollector):
     k8_master: _K8Master
     k8_worker: _K8Worker
 
