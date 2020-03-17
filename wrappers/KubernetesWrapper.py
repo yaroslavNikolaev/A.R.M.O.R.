@@ -24,7 +24,7 @@ class KubernetesWrapper(CommonWrapper):
         elif super().is_metal(args.environment):
             k8_external = K8Releases()
         k8_internal = K8Application(args.kubernetes, args.kubernetes_token)
-        super().__init__(k8_internal, k8_external)
+        super().__init__(args.name, k8_internal, k8_external)
 
     def collect(self) -> typing.List[GaugeMetricFamily]:
         if not self.active:

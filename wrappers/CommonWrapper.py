@@ -14,6 +14,10 @@ class AbstractWrapper(abc.ABC):
     AZURE = "azure"
     GCP = "gcp"
     BARE_METAL = "metal"
+    installation: str
+
+    def __init__(self, installation: str):
+        self.installation = installation
 
     def is_aws(self, environment: str) -> bool:
         return environment == self.AWS
@@ -36,7 +40,8 @@ class CommonWrapper(AbstractWrapper):
     internal_collector: VersionCollector
     external_collector: VersionCollector
 
-    def __init__(self, internal: VersionCollector, external: VersionCollector):
+    def __init__(self, installation: str, internal: VersionCollector, external: VersionCollector):
+        super().__init__(installation)
         self.internal_collector = internal
         self.external_collector = external
         self.active = True
@@ -52,14 +57,18 @@ class CommonWrapper(AbstractWrapper):
     def extract_metrics(self, app_version: NodeVersion, versions: typing.Iterator[NodeVersion]) -> \
             typing.List[GaugeMetricFamily]:
         diff = self.exctract_differences(app_version, versions)
-        major = GaugeMetricFamily("k8_info", 'Kubernetes version', labels=["application", "node", "type"])
-        major.add_metric(["kubernetes", app_version.node_name, "major"], diff.major)
-        minor = GaugeMetricFamily("k8_info", 'Kubernetes version', labels=["application", "node", "type"])
-        minor.add_metric(["kubernetes", app_version.node_name, "minor"], diff.minor)
-        release = GaugeMetricFamily("k8_info", 'Kubernetes version', labels=["application", "node", "type"])
-        release.add_metric(["kubernetes", app_version.node_name, "release"], diff.release)
-        built = GaugeMetricFamily("k8_info", 'Kubernetes version', labels=["application", "node", "type"])
-        built.add_metric(["kubernetes", app_version.node_name, "built"], diff.built)
+        major = GaugeMetricFamily("k8_info", 'Kubernetes version',
+                                  labels=["installation", "application", "node", "channel"])
+        major.add_metric([self.installation, "kubernetes", app_version.node_name, "major"], diff.major)
+        minor = GaugeMetricFamily("k8_info", 'Kubernetes version',
+                                  labels=["installation", "application", "node", "channel"])
+        minor.add_metric([self.installation, "kubernetes", app_version.node_name, "minor"], diff.minor)
+        release = GaugeMetricFamily("k8_info", 'Kubernetes version',
+                                    labels=["installation", "application", "node", "channel"])
+        release.add_metric([self.installation, "kubernetes", app_version.node_name, "release"], diff.release)
+        built = GaugeMetricFamily("k8_info", 'Kubernetes version',
+                                  labels=["installation", "application", "node", "channel"])
+        built.add_metric([self.installation, "kubernetes", app_version.node_name, "built"], diff.built)
         return [major, minor, release, built]
 
     def exctract_differences(self, version_to_check: NodeVersion,

@@ -3,9 +3,10 @@ from Initializer import Initializer
 
 if __name__ == '__main__':
     # initiate the parser (todo think about kind of auto-discovery)
-    parser = argparse.ArgumentParser(description="calculate X to the power of Y")
+    parser = argparse.ArgumentParser(description="A.R.M.O.R. application protect you to be late in cloud")
     parser.add_argument("-V", "--version", help="show program version", action="store_true")
     parser.add_argument("-v", "--verbosity", help="increase output verbosity", type=int, choices=[1, 2, 3, 4, 5, 6])
+    parser.add_argument("-n", "--name", default="default", help="Installation name", type=str)
     parser.add_argument("-p", "--port", default=8000, help="A.R.M.O.R. port to use", type=int)
     parser.add_argument("-e", "--environment", help="Name of environment where application is deployed", type=str,
                         choices={"aws", "azure", "gcp", "metal"}, required=True)
@@ -24,9 +25,9 @@ if __name__ == '__main__':
     azure.add_argument("-at", "--azuretoken", help="Azure access token [az account get-access-token]", type=str)
     # gcp
     gcp = parser.add_argument_group("gcp")
-    azure.add_argument("-gp", "--gcpproject", help="Gcp project", )
-    azure.add_argument("-gz", "--gcpzone", help="Gcp zone", type=str)
-    azure.add_argument("-gt", "--gcptoken", help="Gcp token [gcloud auth print-access-token]", type=str)
+    gcp.add_argument("-gp", "--gcpproject", help="Gcp project", )
+    gcp.add_argument("-gz", "--gcpzone", help="Gcp zone", type=str)
+    gcp.add_argument("-gt", "--gcptoken", help="Gcp token [gcloud auth print-access-token]", type=str)
     # aws
 
     # read arguments from the command line
