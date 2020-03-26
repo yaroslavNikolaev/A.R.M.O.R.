@@ -1,4 +1,5 @@
 import typing
+from configparser import ConfigParser
 from .CommonWrapper import CommonWrapper
 from .CommonWrapper import EMPTY_ARRAY
 from prometheus_client.core import GaugeMetricFamily
@@ -10,21 +11,25 @@ from utils.versions import NodeVersion
 
 
 class KubernetesWrapper(CommonWrapper):
+    AWS = "aws"
+    AZURE = "azure"
+    GCP = "gcp"
+    BARE_METAL = "metal"
 
-    def __init__(self, args):
-        if not (args.kubernetes and args.kubernetes_token):
-            return
+    def __init__(self, args: ConfigParser):
         k8_external = None
-        if super().is_aws(args.environment):
+        if args.has_section(self.AWS):
             raise BaseException("AWS is not supported yet")
-        elif super().is_gcp(args.environment):
-            k8_external = K8GCP(args)
-        elif super().is_azure(args.environment):
-            k8_external = K8Azure(args)
-        elif super().is_metal(args.environment):
+        elif args.has_section(self.GCP):
+            k8_external = K8GCP(args[self.GCP])
+        elif args.has_section(self.AZURE):
+            k8_external = K8Azure(args[self.AZURE])
+        elif args.has_section(self.BARE_METAL):
             k8_external = K8Releases()
-        k8_internal = K8Application(args.kubernetes, args.kubernetes_token)
-        super().__init__(args.name, k8_internal, k8_external)
+        if not k8_external:
+            return
+        k8_internal = K8Application(args.get('common', 'kubernetes'), args.get('common', 'kubernetes_token'))
+        super().__init__(args.get('common', 'name', fallback='armor'), k8_internal, k8_external)
 
     def collect(self) -> typing.List[GaugeMetricFamily]:
         if not self.active:

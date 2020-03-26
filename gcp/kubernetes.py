@@ -14,8 +14,8 @@ class K8GCP(VersionCollector):
     auth: map
 
     def __init__(self, args):
-        self.available_updates = self.template.format(args.gcpproject, args.gcpzone)
-        self.auth = {"Authorization": "Bearer " + args.gcptoken, "Content-type": "application/json"}
+        self.available_updates = self.template.format(args['gcp_project'], args['gcp_zone'])
+        self.auth = {"Authorization": "Bearer " + args['gcp_token'], "Content-type": "application/json"}
         pass
 
     def collect(self) -> typing.List[NodeVersion]:
@@ -23,6 +23,8 @@ class K8GCP(VersionCollector):
         connection.request(url=self.available_updates, method="GET", headers=self.auth)
         response = connection.getresponse()
         resp = json.loads(response.read().decode("utf-8"))
+        if 'error' in resp:
+            return []
         releases = resp['validMasterVersions']
         result = []
         for release in releases:

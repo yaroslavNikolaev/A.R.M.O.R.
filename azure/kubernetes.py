@@ -13,8 +13,8 @@ class K8Azure(VersionCollector):
     auth: map
 
     def __init__(self, args):
-        self.available_updates = self.template.format(args.azureSubscription, args.azureResourceGroup, args.aks)
-        self.auth = {"Authorization": "Bearer " + args.azuretoken, "Content-type": "application/json"}
+        self.available_updates = self.template.format(args['az_subscription'], args['az_resourceGroup'], args['aks'])
+        self.auth = {"Authorization": "Bearer " + args['az_token'], "Content-type": "application/json"}
         pass
 
     def collect(self) -> typing.List[NodeVersion]:

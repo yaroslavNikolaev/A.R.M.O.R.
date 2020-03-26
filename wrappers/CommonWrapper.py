@@ -10,26 +10,10 @@ EMPTY_ARRAY = ()
 
 class AbstractWrapper(abc.ABC):
     active = False
-    AWS = "aws"
-    AZURE = "azure"
-    GCP = "gcp"
-    BARE_METAL = "metal"
     installation: str
 
     def __init__(self, installation: str):
         self.installation = installation
-
-    def is_aws(self, environment: str) -> bool:
-        return environment == self.AWS
-
-    def is_azure(self, environment: str) -> bool:
-        return environment == self.AZURE
-
-    def is_gcp(self, environment: str) -> bool:
-        return environment == self.GCP
-
-    def is_metal(self, environment: str) -> bool:
-        return environment == self.BARE_METAL
 
     @abc.abstractmethod
     def collect(self) -> typing.List[GaugeMetricFamily]:
