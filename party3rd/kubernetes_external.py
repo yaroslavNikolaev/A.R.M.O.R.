@@ -1,6 +1,6 @@
 from http.client import HTTPSConnection
 from utils.versions import NodeVersion
-from utils.versions import VersionCollector
+from utils.collectors import VersionCollector
 from pyquery import PyQuery
 import re
 import typing

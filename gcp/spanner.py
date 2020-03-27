@@ -1,7 +1,7 @@
-from utils.versions import MavenCentralVersionCollector
+from utils.collectors import MavenCentralVersionCollector
 
 
-class Spanner(MavenCentralVersionCollector):
+class SpannerCollector(MavenCentralVersionCollector):
     group_id = "com.google.cloud"
     artifact_id = "google-cloud-spanner"
 
