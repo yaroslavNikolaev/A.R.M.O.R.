@@ -1,1 +1,1 @@
-__all__ = ['KubernetesWrapper']
+__all__ = ['KubernetesWrapper', 'CommonWrapper']

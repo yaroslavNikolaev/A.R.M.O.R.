@@ -36,8 +36,11 @@ class MavenCentralVersionCollector(VersionCollector):
         return result
 
 
-class CollectorFactory(abc.ABC):
+class PredefinedVersionCollector(VersionCollector):
+    version: NodeVersion
 
-    @abc.abstractmethod
-    def collect(self) -> VersionCollector:
-        pass
+    def __init__(self, version: NodeVersion):
+        self.version = version
+
+    def collect(self) -> typing.List[NodeVersion]:
+        return [self.version]

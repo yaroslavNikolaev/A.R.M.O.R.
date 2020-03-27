@@ -3,7 +3,7 @@ import copy
 import typing
 from prometheus_client.core import GaugeMetricFamily
 from utils.versions import NodeVersion
-from utils.versions import VersionCollector
+from utils.collectors import VersionCollector
 
 EMPTY_ARRAY = ()
 
