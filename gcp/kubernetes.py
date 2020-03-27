@@ -1,6 +1,7 @@
 from http.client import HTTPSConnection
 from utils.versions import NodeVersion
 from utils.collectors import VersionCollector
+from utils.configuration import Configuration
 import typing
 import json
 
@@ -13,9 +14,9 @@ class K8GCP(VersionCollector):
     stable_versions = '^v\d+\.\d+\.\d+$'
     auth: map
 
-    def __init__(self, args):
-        self.available_updates = self.template.format(args['gcp_project'], args['gcp_zone'])
-        self.auth = {"Authorization": "Bearer " + args['gcp_token'], "Content-type": "application/json"}
+    def __init__(self, config: Configuration):
+        self.available_updates = self.template.format(config.gcp_project(), config.gcp_zone())
+        self.auth = {"Authorization": "Bearer " + config.gcp_token(), "Content-type": "application/json"}
         pass
 
     def collect(self) -> typing.List[NodeVersion]:

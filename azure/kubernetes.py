@@ -1,6 +1,7 @@
 from http.client import HTTPSConnection
 from utils.versions import NodeVersion
 from utils.collectors import VersionCollector
+from utils.configuration import Configuration
 import typing
 import json
 
@@ -12,9 +13,9 @@ class K8Azure(VersionCollector):
     available_updates: str
     auth: map
 
-    def __init__(self, args):
-        self.available_updates = self.template.format(args['az_subscription'], args['az_resourceGroup'], args['aks'])
-        self.auth = {"Authorization": "Bearer " + args['az_token'], "Content-type": "application/json"}
+    def __init__(self, config: Configuration):
+        self.available_updates = self.template.format(config.az_subscription(), config.az_resourceGroup(), config.aks())
+        self.auth = {"Authorization": "Bearer " + config.az_token(), "Content-type": "application/json"}
         pass
 
     def collect(self) -> typing.List[NodeVersion]:

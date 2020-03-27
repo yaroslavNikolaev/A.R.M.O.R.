@@ -71,3 +71,24 @@ class CommonWrapper(AbstractWrapper):
             if major_match and minor_match and release_match and version.built > result.built:
                 result.built = version.built
         return result - version_to_check
+
+
+class KubernetesWrapper(CommonWrapper):
+
+    def collect(self) -> typing.List[GaugeMetricFamily]:
+        if not self.active:
+            return EMPTY_ARRAY
+        external_versions = self.external_collector.collect()
+        internal_versions = self.internal_collector.collect()
+        result = []
+        for internal_version in internal_versions:
+            is_master = internal_version.node_name == "master"
+            filter_function = self.__filter_master_version if is_master else self.__filter_node_versions
+            result += super().extract_metrics(internal_version, filter(filter_function, external_versions))
+        return result
+
+    def __filter_master_version(self, version_to_filter: NodeVersion) -> bool:
+        return version_to_filter.node_name == "master" or version_to_filter.node_name == "k8"
+
+    def __filter_node_versions(self, version_to_filter: NodeVersion) -> bool:
+        return version_to_filter.node_name == "nodes" or version_to_filter.node_name == "k8"
