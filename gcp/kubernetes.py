@@ -6,7 +6,7 @@ import json
 
 
 class K8GCP(VersionCollector):
-    azure = "container.googleapis.com"
+    gcp = "container.googleapis.com"
     # todo raise request to gcp to provide API without auth and link to existing env, only current version
     template = "/v1/projects/{}/zones/{}/serverconfig"
     available_updates: str
@@ -19,7 +19,7 @@ class K8GCP(VersionCollector):
         pass
 
     def collect(self) -> typing.List[NodeVersion]:
-        connection = HTTPSConnection(host=self.azure)
+        connection = HTTPSConnection(host=self.gcp)
         connection.request(url=self.available_updates, method="GET", headers=self.auth)
         response = connection.getresponse()
         resp = json.loads(response.read().decode("utf-8"))

@@ -20,8 +20,7 @@ class K8Releases(VersionCollector):
         connection.request(url=self.kubernetes_release, method="GET")
         response = connection.getresponse()
         parser = PyQuery(response.read().decode("utf-8"))
-        page_versions = parser("[href]")("[title]").text()
-        releases = page_versions.lstrip().split(" ")
+        releases = parser("[href]")("[title]").text().lstrip().split(" ")
         # not necessary last version in this page -> do find highest versions and
         result = []
         for release in releases:
