@@ -1,61 +1,43 @@
-from http.client import HTTPSConnection
+import typing
+from kubernetes import client
 from utils.versions import NodeVersion
 from utils.collectors import VersionCollector
 from utils.configuration import Configuration
-import json
-import ssl
-import typing
 
 
-class _K8Master(object):
-    connection: HTTPSConnection
-    auth: map
-
-    def __init__(self, endpoint: str, token: str):
-        self.connection = HTTPSConnection(host=endpoint, context=ssl._create_unverified_context())
-        self.auth = {"Authorization": "Bearer " + token}
-        pass
-
-    def collect(self):
-        self.connection.request(url="/version", method="GET", headers=self.auth)
-        response = self.connection.getresponse()
-        resp = json.loads(response.read().decode("utf-8"))
-        node_version = NodeVersion(resp['gitVersion'], "master")
-        return [node_version]
-
-
-class _K8Worker(object):
-    connection: HTTPSConnection
-    auth: map
-
-    def __init__(self, endpoint: str, token: str):
-        self.connection = HTTPSConnection(host=endpoint, context=ssl._create_unverified_context())
-        self.auth = {"Authorization": "Bearer " + token}
-        pass
+class K8Master(VersionCollector):
+    def __init__(self, config: Configuration, ):
+        super().__init__(config)
 
     def collect(self) -> typing.List[NodeVersion]:
-        self.connection.request(url="/api/v1/nodes", method="GET", headers=self.auth)
-        response = self.connection.getresponse()
-        resp = json.loads(response.read().decode("utf-8"))
+        response = client.VersionApi().get_code_with_http_info()
+        master_version = NodeVersion(response[0].git_version, "master")
+        return [master_version]
+
+
+class K8Worker(VersionCollector):
+    def __init__(self, config: Configuration):
+        super().__init__(config)
+
+    def collect(self) -> typing.List[NodeVersion]:
+        ret = client.CoreV1Api().list_node()
         result = []
-        for node in resp['items']:
-            name = node['metadata']['name']
-            release = node['status']['nodeInfo']['kubeletVersion']
+        for node in ret.items:
+            name = node.metadata.name
+            release = node.status.node_info.kubelet_version
             node_version = NodeVersion(release, name)
-            result += [node_version]
+            result.append(node_version)
         return result
 
 
 class K8Application(VersionCollector):
-    k8_master: _K8Master
-    k8_worker: _K8Worker
+    k8_master: K8Master
+    k8_worker: K8Worker
 
     def __init__(self, configuration: Configuration):
         super().__init__(configuration)
-        endpoint = configuration.kubernetes()
-        token = configuration.kubernetes_token()
-        self.k8_master = _K8Master(endpoint, token)
-        self.k8_worker = _K8Worker(endpoint, token)
+        self.k8_master = K8Master(configuration)
+        self.k8_worker = K8Worker(configuration)
 
     def collect(self) -> typing.List[NodeVersion]:
         result = []

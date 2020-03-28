@@ -28,8 +28,6 @@ def init(collectors_factory: CollectorFactory, configuration: Configuration):
 
 
 def extract_applications() -> typing.Dict[str, NodeVersion]:
-    # Configs can be set in Configuration class directly or using helper utility
-    config.load_kube_config()
     ret = client.CoreV1Api().list_pod_for_all_namespaces(watch=False)
     result = dict()
     for i in ret.items:
@@ -48,4 +46,6 @@ def extract_applications() -> typing.Dict[str, NodeVersion]:
 if __name__ == '__main__':
     cfg = Configuration()
     factory = CollectorFactory(cfg)
+    # Configs can be set in Configuration class directly or using helper utility
+    config.load_kube_config()
     init(factory, cfg)
