@@ -1,12 +1,17 @@
 from http.client import HTTPSConnection
 from utils.versions import NodeVersion
-from utils.collectors import VersionCollector
+from utils.collectors import VersionCollector, singleton
 from utils.configuration import Configuration
 import typing
 import json
 
 
+@singleton
 class K8GCP(VersionCollector):
+    @staticmethod
+    def get_application_name() -> str:
+        return "gke"
+
     gcp = "container.googleapis.com"
     # todo raise request to gcp to provide API without auth and link to existing env, only current version
     template = "/v1/projects/{}/zones/{}/serverconfig"

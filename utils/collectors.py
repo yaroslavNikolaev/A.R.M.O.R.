@@ -2,8 +2,19 @@ import abc
 import typing
 from http.client import HTTPSConnection
 from pyquery import PyQuery
-from utils.versions import NodeVersion
+from utils.versions import NodeVersion, ZERO_VERSION
 from utils.configuration import Configuration
+
+
+def singleton(class_):
+    instances = {}
+
+    def get_instance(*args, **kwargs):
+        if class_ not in instances:
+            instances[class_] = class_(*args, **kwargs)
+        return instances[class_]
+
+    return get_instance
 
 
 class VersionCollector(abc.ABC):
@@ -14,6 +25,11 @@ class VersionCollector(abc.ABC):
 
     @abc.abstractmethod
     def collect(self) -> typing.List[NodeVersion]:
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def get_application_name() -> str:
         pass
 
 
@@ -42,7 +58,12 @@ class MavenCentralVersionCollector(VersionCollector, abc.ABC):
         return result
 
 
-class PredefinedVersionCollector(VersionCollector):
+class ConstantVersionCollector(VersionCollector):
+
+    @staticmethod
+    def get_application_name() -> str:
+        return "constant"
+
     version: NodeVersion
 
     def __init__(self, config: Configuration, version: NodeVersion):
@@ -51,3 +72,16 @@ class PredefinedVersionCollector(VersionCollector):
 
     def collect(self) -> typing.List[NodeVersion]:
         return [self.version]
+
+
+@singleton
+class MockCollector(VersionCollector):
+    def __init__(self, config: Configuration, *args):
+        super().__init__(config, *args)
+
+    def collect(self) -> typing.List[NodeVersion]:
+        return [ZERO_VERSION]
+
+    @staticmethod
+    def get_application_name() -> str:
+        return "mock"

@@ -1,13 +1,18 @@
 import typing
 import re
 from pyquery import PyQuery
-from utils.collectors import VersionCollector
+from utils.collectors import VersionCollector, singleton
 from utils.configuration import Configuration
 from utils.versions import NodeVersion
 from http.client import HTTPSConnection
 
 
+@singleton
 class FilebeatCollector(VersionCollector):
+
+    @staticmethod
+    def get_application_name() -> str:
+        return "filebeat"
 
     def __init__(self, config: Configuration):
         super().__init__(config)

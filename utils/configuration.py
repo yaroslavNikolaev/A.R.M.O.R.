@@ -105,10 +105,10 @@ class Configuration(object):
     def kubernetes_application(self) -> str:
         if self.__config.has_section(aws):
             logging.warning("AWS is not supported yet , Mock will be used to cover this area")
-            return ""
+            return "aws.eks"
         elif self.__config.has_section(gcp):
-            return "K8GCP"
+            return "gcp.gke"
         elif self.__config.has_section(azure):
-            return "K8Azure"
+            return "azure.aks"
         else:
-            return "K8Releases"
+            return "party3rd.kubernetes"
