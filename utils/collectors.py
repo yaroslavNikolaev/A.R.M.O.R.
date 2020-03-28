@@ -52,7 +52,7 @@ class MavenCentralVersionCollector(VersionCollector, abc.ABC):
         releases = parser.find(".release").text().lstrip().split(" ")
         result = []
         for release in releases:
-            release_version = NodeVersion(release, self.artifact)
+            release_version = NodeVersion(release, self.artifact, self.get_application_name())
             result.append(release_version)
 
         return result

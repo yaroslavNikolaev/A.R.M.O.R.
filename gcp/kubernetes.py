@@ -34,11 +34,11 @@ class K8GCP(VersionCollector):
         releases = resp['validMasterVersions']
         result = []
         for release in releases:
-            release_version = NodeVersion(release, "master")
+            release_version = NodeVersion(release, "master", "kubernetes")
             result += [release_version]
 
         releases = resp['validNodeVersions']
         for release in releases:
-            release_version = NodeVersion(release, "nodes")
+            release_version = NodeVersion(release, "nodes", "kubernetes")
             result += [release_version]
         return result

@@ -42,19 +42,23 @@ class CommonMetricProducer(AbstractMetricProducer):
 
     def extract_metrics(self, app_version: NodeVersion, versions: typing.Iterator[NodeVersion]) -> \
             typing.List[GaugeMetricFamily]:
+        app_name = app_version.app
+        node_name = app_version.node_name
+        info_title = app_name + "_info"
+        version_title = app_name + ' version'
         diff = self.exctract_differences(app_version, versions)
-        major = GaugeMetricFamily("k8_info", 'Kubernetes version',
+        major = GaugeMetricFamily(info_title, version_title,
                                   labels=["installation", "application", "node", "channel"])
-        major.add_metric([self.installation, "kubernetes", app_version.node_name, "major"], diff.major)
-        minor = GaugeMetricFamily("k8_info", 'Kubernetes version',
+        major.add_metric([self.installation, app_name, node_name, "major"], diff.major)
+        minor = GaugeMetricFamily(info_title, version_title,
                                   labels=["installation", "application", "node", "channel"])
-        minor.add_metric([self.installation, "kubernetes", app_version.node_name, "minor"], diff.minor)
-        release = GaugeMetricFamily("k8_info", 'Kubernetes version',
+        minor.add_metric([self.installation, app_name, node_name, "minor"], diff.minor)
+        release = GaugeMetricFamily(info_title, version_title,
                                     labels=["installation", "application", "node", "channel"])
-        release.add_metric([self.installation, "kubernetes", app_version.node_name, "release"], diff.release)
-        built = GaugeMetricFamily("k8_info", 'Kubernetes version',
+        release.add_metric([self.installation, app_name, node_name, "release"], diff.release)
+        built = GaugeMetricFamily(info_title, version_title,
                                   labels=["installation", "application", "node", "channel"])
-        built.add_metric([self.installation, "kubernetes", app_version.node_name, "built"], diff.built)
+        built.add_metric([self.installation, app_name, node_name, "build"], diff.built)
         return [major, minor, release, built]
 
     def exctract_differences(self, version_to_check: NodeVersion,
@@ -117,7 +121,7 @@ class ApplicationMetricProducer(AbstractMetricProducer):
             for application_version in application[1]:
                 internal = self.factory.instantiate_collector(self.constant_version_collector, application_version)
                 external = self.factory.instantiate_collector(application_name)
-                # todo each collector separatly in separate thread? by application in order to cache response?
+                # todo each collector separatly in separate thread? by application in order to cache response!
                 result += CommonMetricProducer(self.installation, internal, external).collect()
         return result
 
@@ -128,12 +132,13 @@ class ApplicationMetricProducer(AbstractMetricProducer):
             if i.metadata.annotations is None:
                 continue
             for annotation in i.metadata.annotations.keys():
+                # template example :  "armor.io/gcp.spanner"
                 if "armor.io" not in annotation:
                     continue
-                application = annotation.split("/")[1]
+                application = annotation.split(sep="/", maxsplit=1)[1]
                 if application not in result:
                     result[application] = []
                 version = i.metadata.annotations[annotation]
-                result[application].append(NodeVersion(version, i.metadata.name))
-                logging.info(f'Application {i.metadata.name} with version {version} was detected')
+                result[application].append(NodeVersion(version, i.metadata.name, application))
+                logging.info(f'Application {application} with version {version} on pod {i.metadata.name} was detected')
         return result

@@ -33,7 +33,7 @@ class K8Azure(VersionCollector):
         for release in releases:
             if 'isPreview' in release and release['isPreview']:
                 continue
-            release_version = NodeVersion(release['kubernetesVersion'], "k8")
+            release_version = NodeVersion(release['kubernetesVersion'], "k8", "kubernetes")
             result += [release_version]
             break
         return result

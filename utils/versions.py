@@ -28,10 +28,12 @@ class Version(object):
 
 class NodeVersion(Version):
     node_name: str
+    app: str
 
-    def __init__(self, version: str, node: str):
+    def __init__(self, version: str, node: str, app: str):
         super().__init__(version)
         self.node_name = node
+        self.app = app
 
     def __sub__(self, other):
         result = copy(ZERO_VERSION)
@@ -42,4 +44,4 @@ class NodeVersion(Version):
         return result
 
 
-ZERO_VERSION = NodeVersion("v0.0.0", "")
+ZERO_VERSION = NodeVersion("v0.0.0", "", "")
