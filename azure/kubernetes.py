@@ -14,9 +14,9 @@ class K8Azure(VersionCollector):
     auth: map
 
     def __init__(self, config: Configuration):
+        super().__init__(config)
         self.available_updates = self.template.format(config.az_subscription(), config.az_resourceGroup(), config.aks())
         self.auth = {"Authorization": "Bearer " + config.az_token(), "Content-type": "application/json"}
-        pass
 
     def collect(self) -> typing.List[NodeVersion]:
         connection = HTTPSConnection(host=self.azure)

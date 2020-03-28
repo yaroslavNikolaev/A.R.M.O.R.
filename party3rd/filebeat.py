@@ -2,11 +2,16 @@ import typing
 import re
 from pyquery import PyQuery
 from utils.collectors import VersionCollector
+from utils.configuration import Configuration
 from utils.versions import NodeVersion
 from http.client import HTTPSConnection
 
 
 class FilebeatCollector(VersionCollector):
+
+    def __init__(self, config: Configuration):
+        super().__init__(config)
+
     elastic = "www.elastic.co"
     versions = "/guide/en/beats/libbeat/current/release-notes.html"
     artifact = "filebeat"

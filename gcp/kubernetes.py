@@ -15,9 +15,9 @@ class K8GCP(VersionCollector):
     auth: map
 
     def __init__(self, config: Configuration):
+        super().__init__(config)
         self.available_updates = self.template.format(config.gcp_project(), config.gcp_zone())
         self.auth = {"Authorization": "Bearer " + config.gcp_token(), "Content-type": "application/json"}
-        pass
 
     def collect(self) -> typing.List[NodeVersion]:
         connection = HTTPSConnection(host=self.gcp)

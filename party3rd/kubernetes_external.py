@@ -1,6 +1,7 @@
 from http.client import HTTPSConnection
 from utils.versions import NodeVersion
 from utils.collectors import VersionCollector
+from utils.configuration import Configuration
 from pyquery import PyQuery
 import re
 import typing
@@ -12,8 +13,8 @@ class K8Releases(VersionCollector):
     kubernetes_release = "/kubernetes/kubernetes/releases"
     stable_versions = '^v\d+\.\d+\.\d+$'
 
-    def __init__(self):
-        pass
+    def __init__(self, config: Configuration):
+        super().__init__(config)
 
     def collect(self) -> typing.List[NodeVersion]:
         connection = HTTPSConnection(host=self.git, context=ssl._create_unverified_context())

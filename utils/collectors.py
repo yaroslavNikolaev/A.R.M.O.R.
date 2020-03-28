@@ -3,22 +3,28 @@ import typing
 from http.client import HTTPSConnection
 from pyquery import PyQuery
 from utils.versions import NodeVersion
+from utils.configuration import Configuration
 
 
 class VersionCollector(abc.ABC):
+
+    @abc.abstractmethod
+    def __init__(self, config: Configuration, *args):
+        pass
 
     @abc.abstractmethod
     def collect(self) -> typing.List[NodeVersion]:
         pass
 
 
-class MavenCentralVersionCollector(VersionCollector):
+class MavenCentralVersionCollector(VersionCollector, abc.ABC):
     maven = "mvnrepository.com"
     template = "/artifact/{}/{}"
     versions: str
     artifact: str
 
-    def __init__(self, group_id: str, artifact_id: str):
+    def __init__(self, config: Configuration, group_id: str, artifact_id: str):
+        super().__init__(config)
         self.versions = self.template.format(group_id, artifact_id)
         self.artifact = artifact_id
 
@@ -39,7 +45,8 @@ class MavenCentralVersionCollector(VersionCollector):
 class PredefinedVersionCollector(VersionCollector):
     version: NodeVersion
 
-    def __init__(self, version: NodeVersion):
+    def __init__(self, config: Configuration, version: NodeVersion):
+        super().__init__(config)
         self.version = version
 
     def collect(self) -> typing.List[NodeVersion]:

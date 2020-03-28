@@ -1,4 +1,5 @@
 import sys
+import logging
 from configparser import ConfigParser
 from argparse import ArgumentParser
 
@@ -45,7 +46,7 @@ class Configuration(object):
         # common
         common_group = parser.add_argument_group(common)
         common_group.add_argument("-V", "--" + version, help="show A.R.M.O.R. version", action="store_true")
-        common_group.add_argument("--" + name, default="default", help="Installation name", type=str)
+        common_group.add_argument("--" + name, default="armor", help="Installation name", type=str)
         common_group.add_argument("--" + port, default=8000, help="A.R.M.O.R. port to use", type=int)
         common_group.add_argument("--" + kubernetes, help="Http endpoint of kube", type=str)
         # https://kubernetes.io/docs/reference/access-authn-authz/rbac/#service-account-permissions
@@ -80,12 +81,6 @@ class Configuration(object):
     def kubernetes_token(self) -> str:
         return self.__config.get(common, kubernetes_token)
 
-    def is_aws(self) -> bool:
-        return self.__config.has_section(aws)
-
-    def is_azure(self) -> bool:
-        return self.__config.has_section(azure)
-
     def aks(self) -> str:
         return self.__config.get(azure, aks)
 
@@ -98,10 +93,6 @@ class Configuration(object):
     def az_token(self) -> str:
         return self.__config.get(azure, az_token)
 
-
-    def is_gcp(self) -> bool:
-        return self.__config.has_section(gcp)
-
     def gcp_project(self) -> str:
         return self.__config.get(gcp, gcp_project)
 
@@ -110,3 +101,14 @@ class Configuration(object):
 
     def gcp_token(self) -> str:
         return self.__config.get(gcp, gcp_token)
+
+    def kubernetes_application(self) -> str:
+        if self.__config.has_section(aws):
+            logging.warning("AWS is not supported yet , Mock will be used to cover this area")
+            return ""
+        elif self.__config.has_section(gcp):
+            return "K8GCP"
+        elif self.__config.has_section(azure):
+            return "K8Azure"
+        else:
+            return "K8Releases"

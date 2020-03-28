@@ -1,6 +1,7 @@
 from http.client import HTTPSConnection
 from utils.versions import NodeVersion
 from utils.collectors import VersionCollector
+from utils.configuration import Configuration
 import json
 import ssl
 import typing
@@ -49,7 +50,10 @@ class K8Application(VersionCollector):
     k8_master: _K8Master
     k8_worker: _K8Worker
 
-    def __init__(self, endpoint: str, token: str):
+    def __init__(self, configuration: Configuration):
+        super().__init__(configuration)
+        endpoint = configuration.kubernetes()
+        token = configuration.kubernetes_token()
         self.k8_master = _K8Master(endpoint, token)
         self.k8_worker = _K8Worker(endpoint, token)
 
