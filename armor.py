@@ -3,7 +3,7 @@ import prometheus_client
 from utils.configuration import Configuration
 from prometheus_client.core import REGISTRY
 from kubernetes import config
-from utils.metric_producers import *
+from utils.producers import *
 
 if __name__ == '__main__':
     logging.info("A.R.M.O.R is going to setup configuration")

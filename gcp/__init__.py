@@ -1,1 +1,1 @@
-__all__ = ['kubernetes', 'spanner']
+__all__ = ['kubernetes', 'java_clients']

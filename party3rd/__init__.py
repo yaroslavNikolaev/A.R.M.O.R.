@@ -1,1 +1,1 @@
-__all__ = ['filebeat', 'kubernetes']
+__all__ = ['elk', 'cloud_native']

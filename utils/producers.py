@@ -2,6 +2,7 @@ import abc
 import copy
 import typing
 import logging
+from functools import lru_cache
 from kubernetes import client
 from prometheus_client.core import GaugeMetricFamily
 from utils.versions import NodeVersion
@@ -17,8 +18,15 @@ class AbstractMetricProducer(abc.ABC):
     def __init__(self, installation: str):
         self.installation = installation
 
-    @abc.abstractmethod
     def collect(self) -> typing.List[GaugeMetricFamily]:
+        try:
+            return self.collect_metrics()
+        except Exception:
+            logging.warning(f'Error during collecting in {self.__class__}')
+            return []
+
+    @abc.abstractmethod
+    def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
         pass
 
 
@@ -32,10 +40,18 @@ class CommonMetricProducer(AbstractMetricProducer):
         self.external_collector = external
         self.active = True
 
-    def collect(self) -> typing.List[GaugeMetricFamily]:
-        external_versions = self.external_collector.collect()
-        internal_versions = self.internal_collector.collect()
+    def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
         result = []
+        try:
+            external_versions = self.external_collector.collect()
+        except Exception:
+            logging.error("Error appears during external version gathering", exc_info=True)
+            return result
+        try:
+            internal_versions = self.internal_collector.collect()
+        except Exception:
+            logging.error("Error appears during external version gathering", exc_info=True)
+            return result
         for internal_version in internal_versions:
             result += self.extract_metrics(internal_version, external_versions)
         return result
@@ -44,21 +60,22 @@ class CommonMetricProducer(AbstractMetricProducer):
             typing.List[GaugeMetricFamily]:
         app_name = app_version.app
         node_name = app_version.node_name
-        info_title = app_name + "_info"
-        version_title = app_name + ' version'
+        pod_name = app_version.pod_name
+        info_title = "armor_metrics"
+        version_title = 'Information about internally used applications versions'
         diff = self.exctract_differences(app_version, versions)
         major = GaugeMetricFamily(info_title, version_title,
-                                  labels=["installation", "application", "node", "channel"])
-        major.add_metric([self.installation, app_name, node_name, "major"], diff.major)
+                                  labels=["installation", "application", "node", "pod", "channel"])
+        major.add_metric([self.installation, app_name, node_name, pod_name, "major"], diff.major)
         minor = GaugeMetricFamily(info_title, version_title,
-                                  labels=["installation", "application", "node", "channel"])
-        minor.add_metric([self.installation, app_name, node_name, "minor"], diff.minor)
+                                  labels=["installation", "application", "node", "pod", "channel"])
+        minor.add_metric([self.installation, app_name, node_name, pod_name, "minor"], diff.minor)
         release = GaugeMetricFamily(info_title, version_title,
-                                    labels=["installation", "application", "node", "channel"])
-        release.add_metric([self.installation, app_name, node_name, "release"], diff.release)
+                                    labels=["installation", "application", "node", "pod", "channel"])
+        release.add_metric([self.installation, app_name, node_name, pod_name, "release"], diff.release)
         built = GaugeMetricFamily(info_title, version_title,
-                                  labels=["installation", "application", "node", "channel"])
-        built.add_metric([self.installation, app_name, node_name, "build"], diff.built)
+                                  labels=["installation", "application", "node", "pod", "channel"])
+        built.add_metric([self.installation, app_name, node_name, pod_name, "build"], diff.built)
         return [major, minor, release, built]
 
     def exctract_differences(self, version_to_check: NodeVersion,
@@ -82,11 +99,12 @@ class CommonMetricProducer(AbstractMetricProducer):
 class KubernetesMetricProducer(CommonMetricProducer):
 
     def __init__(self, installation: str, factory: CollectorFactory):
-        k8_internal = factory.instantiate_collector("party3rd.k8")
+        k8_internal = factory.instantiate_collector("party3rd.cloud_native.k8")
         k8_external = factory.instantiate_k8_service_collector()
         super().__init__(installation, k8_internal, k8_external)
 
-    def collect(self) -> typing.List[GaugeMetricFamily]:
+    @lru_cache(maxsize=128, typed=False)
+    def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
         if not self.active:
             return []
         external_versions = self.external_collector.collect()
@@ -113,7 +131,8 @@ class ApplicationMetricProducer(AbstractMetricProducer):
         super().__init__(installation)
         self.factory = factory
 
-    def collect(self) -> typing.List[GaugeMetricFamily]:
+    @lru_cache(maxsize=128, typed=False)
+    def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
         applications = self.extract_applications()
         result = []
         for application in applications.items():
@@ -122,7 +141,7 @@ class ApplicationMetricProducer(AbstractMetricProducer):
                 internal = self.factory.instantiate_collector(self.constant_version_collector, application_version)
                 external = self.factory.instantiate_collector(application_name)
                 # todo each collector separatly in separate thread? by application in order to cache response!
-                result += CommonMetricProducer(self.installation, internal, external).collect()
+                result += CommonMetricProducer(self.installation, internal, external).collect_metrics()
         return result
 
     def extract_applications(self) -> typing.Dict[str, typing.List[NodeVersion]]:
@@ -132,13 +151,13 @@ class ApplicationMetricProducer(AbstractMetricProducer):
             if i.metadata.annotations is None:
                 continue
             for annotation in i.metadata.annotations.keys():
-                # template example :  "armor.io/gcp.spanner"
+                # template armor.io/{app_group}/{app_type}/{application} : "armor.io/gcp.java_client.spanner"
                 if "armor.io" not in annotation:
                     continue
                 application = annotation.split(sep="/", maxsplit=1)[1]
                 if application not in result:
                     result[application] = []
                 version = i.metadata.annotations[annotation]
-                result[application].append(NodeVersion(version, i.metadata.name, application))
+                result[application].append(NodeVersion(application, version, i.spec.node_name, i.metadata.name))
                 logging.info(f'Application {application} with version {version} on pod {i.metadata.name} was detected')
         return result

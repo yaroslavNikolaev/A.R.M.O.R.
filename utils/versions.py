@@ -9,30 +9,23 @@ def _extract_numbers(version: str) -> int:
     return int(result)
 
 
-class Version(object):
+class NodeVersion(object):
     major: int
     minor: int
     release: int
     built: int
+    node_name: str
+    pod_name: str
+    app: str
 
-    def __init__(self, version: str):
+    def __init__(self, app: str, version: str, node: str = "-", pod: str = "-"):
         versions = version.split(".")
         self.major = _extract_numbers(versions[0])
         self.minor = _extract_numbers(versions[1])
         self.release = _extract_numbers(versions[2])
         self.built = _extract_numbers(versions[3]) if len(versions) > 3 else 0
-
-    def get_float_value(self):
-        return self.major * 100 + self.minor + self.release / 100
-
-
-class NodeVersion(Version):
-    node_name: str
-    app: str
-
-    def __init__(self, version: str, node: str, app: str):
-        super().__init__(version)
         self.node_name = node
+        self.pod_name = pod
         self.app = app
 
     def __sub__(self, other):
@@ -44,4 +37,4 @@ class NodeVersion(Version):
         return result
 
 
-ZERO_VERSION = NodeVersion("v0.0.0", "", "")
+ZERO_VERSION = NodeVersion("", "v0.0.0")

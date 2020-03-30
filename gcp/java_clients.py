@@ -14,3 +14,17 @@ class SpannerCollector(MavenCentralVersionCollector):
 
     def __init__(self, config: Configuration):
         super().__init__(config, self.group_id, self.artifact_id)
+
+
+@singleton
+class BigTableCollector(MavenCentralVersionCollector):
+
+    @staticmethod
+    def get_application_name() -> str:
+        return "bigtable"
+
+    group_id = "com.google.cloud.bigtable"
+    artifact_id = "bigtable-hbase-2.x"
+
+    def __init__(self, config: Configuration):
+        super().__init__(config, self.group_id, self.artifact_id)

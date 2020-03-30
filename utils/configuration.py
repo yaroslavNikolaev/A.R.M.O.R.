@@ -72,6 +72,9 @@ class Configuration(object):
     def name(self) -> str:
         return self.__config.get(common, name)
 
+    def version(self) -> str:
+        return self.__config.get(common, version)
+
     def port(self) -> int:
         return self.__config.getint(common, port)
 
@@ -105,10 +108,10 @@ class Configuration(object):
     def kubernetes_application(self) -> str:
         if self.__config.has_section(aws):
             logging.warning("AWS is not supported yet , Mock will be used to cover this area")
-            return "aws.eks"
+            return "aws.kubernetes.eks"
         elif self.__config.has_section(gcp):
-            return "gcp.gke"
+            return "gcp.kubernetes.gke"
         elif self.__config.has_section(azure):
-            return "azure.aks"
+            return "azure.kubernetes.aks"
         else:
-            return "party3rd.kubernetes"
+            return "party3rd.cloud_native.kubernetes"

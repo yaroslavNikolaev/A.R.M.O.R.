@@ -20,7 +20,7 @@ class K8Master(VersionCollector):
 
     def collect(self) -> typing.List[NodeVersion]:
         response = client.VersionApi().get_code_with_http_info()
-        master_version = NodeVersion(response[0].git_version, "master", "kubernetes")
+        master_version = NodeVersion("kubernetes", response[0].git_version, "master")
         return [master_version]
 
 
@@ -37,9 +37,9 @@ class K8Worker(VersionCollector):
         ret = client.CoreV1Api().list_node()
         result = []
         for node in ret.items:
-            name = node.metadata.name
+            node_name = node.metadata.name
             release = node.status.node_info.kubelet_version
-            node_version = NodeVersion(release, name, "kubernetes")
+            node_version = NodeVersion("kubernetes", release, node_name)
             result.append(node_version)
         return result
 
@@ -90,8 +90,24 @@ class K8Releases(VersionCollector):
         for release in releases:
             if not re.search(self.stable_versions, release):
                 continue
-            release_version = NodeVersion(release, "k8", "kubernetes")
-            result += [release_version]
+            release_version = NodeVersion("kubernetes", release, "k8")
+            result.append(release_version)
             break
 
         return result
+
+
+@singleton
+class ArmorCollector(VersionCollector):
+    version: typing.List[NodeVersion]
+
+    def collect(self) -> typing.List[NodeVersion]:
+        return self.version
+
+    @staticmethod
+    def get_application_name() -> str:
+        return "armor"
+
+    def __init__(self, config: Configuration):
+        super().__init__(config)
+        self.version = [NodeVersion(self.get_application_name(), config.version())]

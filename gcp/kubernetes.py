@@ -4,6 +4,7 @@ from utils.collectors import VersionCollector, singleton
 from utils.configuration import Configuration
 import typing
 import json
+import logging
 
 
 @singleton
@@ -30,15 +31,16 @@ class K8GCP(VersionCollector):
         response = connection.getresponse()
         resp = json.loads(response.read().decode("utf-8"))
         if 'error' in resp:
-            return []
+            logging.warning(f"Error during fetching of GKE versions: {resp.error}")
+            raise LookupError(resp.error)
         releases = resp['validMasterVersions']
         result = []
         for release in releases:
-            release_version = NodeVersion(release, "master", "kubernetes")
+            release_version = NodeVersion("kubernetes", release, "master")
             result += [release_version]
 
         releases = resp['validNodeVersions']
         for release in releases:
-            release_version = NodeVersion(release, "nodes", "kubernetes")
+            release_version = NodeVersion("kubernetes", release, "nodes")
             result += [release_version]
         return result

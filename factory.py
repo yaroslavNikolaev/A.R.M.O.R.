@@ -37,7 +37,7 @@ class CollectorFactory(object):
                 self.__init_collectors(class_)
             if not inspect.isabstract(class_):
                 application = class_.get_application_name()
-                package = str(inspect.getmodule(class_).__name__).split(".")[0]
+                package = inspect.getmodule(class_).__name__
                 full_name = package + "." + application
                 if full_name in self.collectors:
                     raise KeyError(full_name + ": Already exist , plz check collectors")
