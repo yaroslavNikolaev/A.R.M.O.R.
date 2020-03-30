@@ -2,7 +2,7 @@ import typing
 import re
 import ssl
 from kubernetes import client
-from utils.versions import NodeVersion
+from utils.versions import ApplicationVersion
 from utils.collectors import VersionCollector, singleton
 from utils.configuration import Configuration
 from http.client import HTTPSConnection
@@ -18,9 +18,9 @@ class K8Master(VersionCollector):
     def __init__(self, config: Configuration, ):
         super().__init__(config)
 
-    def collect(self) -> typing.List[NodeVersion]:
+    def collect(self) -> typing.List[ApplicationVersion]:
         response = client.VersionApi().get_code_with_http_info()
-        master_version = NodeVersion("kubernetes", response[0].git_version, "master")
+        master_version = ApplicationVersion("kubernetes", response[0].git_version, "master")
         return [master_version]
 
 
@@ -33,13 +33,13 @@ class K8Worker(VersionCollector):
     def __init__(self, config: Configuration):
         super().__init__(config)
 
-    def collect(self) -> typing.List[NodeVersion]:
+    def collect(self) -> typing.List[ApplicationVersion]:
         ret = client.CoreV1Api().list_node()
         result = []
         for node in ret.items:
             node_name = node.metadata.name
             release = node.status.node_info.kubelet_version
-            node_version = NodeVersion("kubernetes", release, node_name)
+            node_version = ApplicationVersion("kubernetes", release, node_name)
             result.append(node_version)
         return result
 
@@ -58,7 +58,7 @@ class K8Application(VersionCollector):
         self.k8_master = K8Master(configuration)
         self.k8_worker = K8Worker(configuration)
 
-    def collect(self) -> typing.List[NodeVersion]:
+    def collect(self) -> typing.List[ApplicationVersion]:
         result = []
         result += self.k8_master.collect()
         result += self.k8_worker.collect()
@@ -79,7 +79,7 @@ class K8Releases(VersionCollector):
     def __init__(self, config: Configuration):
         super().__init__(config)
 
-    def collect(self) -> typing.List[NodeVersion]:
+    def collect(self) -> typing.List[ApplicationVersion]:
         connection = HTTPSConnection(host=self.git, context=ssl._create_unverified_context())
         connection.request(url=self.kubernetes_release, method="GET")
         response = connection.getresponse()
@@ -90,7 +90,7 @@ class K8Releases(VersionCollector):
         for release in releases:
             if not re.search(self.stable_versions, release):
                 continue
-            release_version = NodeVersion("kubernetes", release, "k8")
+            release_version = ApplicationVersion("kubernetes", release, "k8")
             result.append(release_version)
             break
 
@@ -99,9 +99,9 @@ class K8Releases(VersionCollector):
 
 @singleton
 class ArmorCollector(VersionCollector):
-    version: typing.List[NodeVersion]
+    version: typing.List[ApplicationVersion]
 
-    def collect(self) -> typing.List[NodeVersion]:
+    def collect(self) -> typing.List[ApplicationVersion]:
         return self.version
 
     @staticmethod
@@ -110,4 +110,4 @@ class ArmorCollector(VersionCollector):
 
     def __init__(self, config: Configuration):
         super().__init__(config)
-        self.version = [NodeVersion(self.get_application_name(), config.version())]
+        self.version = [ApplicationVersion(self.get_application_name(), config.version())]

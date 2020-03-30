@@ -1,5 +1,5 @@
 from http.client import HTTPSConnection
-from utils.versions import NodeVersion
+from utils.versions import ApplicationVersion, Channel
 from utils.collectors import VersionCollector, singleton
 from utils.configuration import Configuration
 import typing
@@ -25,7 +25,7 @@ class K8GCP(VersionCollector):
         self.available_updates = self.template.format(config.gcp_project(), config.gcp_zone())
         self.auth = {"Authorization": "Bearer " + config.gcp_token(), "Content-type": "application/json"}
 
-    def collect(self) -> typing.List[NodeVersion]:
+    def collect(self) -> typing.List[ApplicationVersion]:
         connection = HTTPSConnection(host=self.gcp)
         connection.request(url=self.available_updates, method="GET", headers=self.auth)
         response = connection.getresponse()
@@ -36,11 +36,11 @@ class K8GCP(VersionCollector):
         releases = resp['validMasterVersions']
         result = []
         for release in releases:
-            release_version = NodeVersion("kubernetes", release, "master")
+            release_version = ApplicationVersion("kubernetes", release, "master")
             result += [release_version]
 
         releases = resp['validNodeVersions']
         for release in releases:
-            release_version = NodeVersion("kubernetes", release, "nodes")
+            release_version = ApplicationVersion("kubernetes", release, "nodes")
             result += [release_version]
         return result

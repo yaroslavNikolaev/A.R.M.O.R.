@@ -3,7 +3,7 @@ import re
 from pyquery import PyQuery
 from utils.collectors import VersionCollector, singleton
 from utils.configuration import Configuration
-from utils.versions import NodeVersion
+from utils.versions import ApplicationVersion
 from http.client import HTTPSConnection
 
 
@@ -22,7 +22,7 @@ class FilebeatCollector(VersionCollector):
     artifact = "filebeat"
     stable_versions = '[a-zA-Z]*\d+\.\d+\.\d+$'
 
-    def collect(self) -> typing.List[NodeVersion]:
+    def collect(self) -> typing.List[ApplicationVersion]:
         connection = HTTPSConnection(host=self.elastic)
         connection.request(url=self.versions, method="GET")
         response = connection.getresponse()
@@ -32,7 +32,7 @@ class FilebeatCollector(VersionCollector):
         for release in releases:
             if not re.search(self.stable_versions, release):
                 continue
-            release_version = NodeVersion(self.get_application_name(), release)
+            release_version = ApplicationVersion(self.get_application_name(), release)
             result.append(release_version)
 
         return result

@@ -1,5 +1,5 @@
 from http.client import HTTPSConnection
-from utils.versions import NodeVersion
+from utils.versions import ApplicationVersion
 from utils.collectors import VersionCollector, singleton
 from utils.configuration import Configuration
 import typing
@@ -23,7 +23,7 @@ class K8Azure(VersionCollector):
         self.available_updates = self.template.format(config.az_subscription(), config.az_resourceGroup(), config.aks())
         self.auth = {"Authorization": "Bearer " + config.az_token(), "Content-type": "application/json"}
 
-    def collect(self) -> typing.List[NodeVersion]:
+    def collect(self) -> typing.List[ApplicationVersion]:
         connection = HTTPSConnection(host=self.azure)
         connection.request(url=self.available_updates, method="GET", headers=self.auth)
         response = connection.getresponse()
@@ -33,7 +33,7 @@ class K8Azure(VersionCollector):
         for release in releases:
             if 'isPreview' in release and release['isPreview']:
                 continue
-            release_version = NodeVersion("kubernetes", release['kubernetesVersion'], "k8")
+            release_version = ApplicationVersion("kubernetes", release['kubernetesVersion'], "k8")
             result += [release_version]
             break
         return result

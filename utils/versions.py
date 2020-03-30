@@ -1,4 +1,5 @@
 from copy import copy
+from enum import Enum
 
 
 def _extract_numbers(version: str) -> int:
@@ -9,21 +10,28 @@ def _extract_numbers(version: str) -> int:
     return int(result)
 
 
-class NodeVersion(object):
+class Channel(Enum):
+    MAJOR = "major"
+    MINOR = "minor"
+    RELEASE = "release"
+    BUILD = "build"
+
+
+class ApplicationVersion(object):
+    app: str
     major: int
     minor: int
     release: int
-    built: int
+    build: int
     node_name: str
     pod_name: str
-    app: str
 
     def __init__(self, app: str, version: str, node: str = "-", pod: str = "-"):
         versions = version.split(".")
         self.major = _extract_numbers(versions[0])
         self.minor = _extract_numbers(versions[1])
         self.release = _extract_numbers(versions[2])
-        self.built = _extract_numbers(versions[3]) if len(versions) > 3 else 0
+        self.build = _extract_numbers(versions[3]) if len(versions) > 3 else 0
         self.node_name = node
         self.pod_name = pod
         self.app = app
@@ -33,8 +41,19 @@ class NodeVersion(object):
         result.major = self.major - other.major
         result.minor = self.minor - other.minor
         result.release = self.release - other.release
-        result.built = self.built - other.built
+        result.build = self.build - other.build
         return result
 
+    def get_channel_version(self, channel: Channel):
+        if channel == Channel.BUILD:
+            return self.build
+        elif channel == Channel.RELEASE:
+            return self.release
+        elif channel == Channel.MINOR:
+            return self.minor
+        elif channel == Channel.MAJOR:
+            return self.major
 
-ZERO_VERSION = NodeVersion("", "v0.0.0")
+
+CHANNELS = [Channel.MAJOR, Channel.MINOR, Channel.RELEASE, Channel.BUILD]
+ZERO_VERSION = ApplicationVersion("", "v0.0.0")

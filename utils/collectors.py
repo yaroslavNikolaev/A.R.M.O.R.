@@ -2,7 +2,7 @@ import abc
 import typing
 from http.client import HTTPSConnection
 from pyquery import PyQuery
-from utils.versions import NodeVersion, ZERO_VERSION
+from utils.versions import ApplicationVersion, ZERO_VERSION
 from utils.configuration import Configuration
 
 
@@ -24,7 +24,7 @@ class VersionCollector(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def collect(self) -> typing.List[NodeVersion]:
+    def collect(self) -> typing.List[ApplicationVersion]:
         pass
 
     @staticmethod
@@ -44,7 +44,7 @@ class MavenCentralVersionCollector(VersionCollector, abc.ABC):
         self.versions = self.template.format(group_id, artifact_id)
         self.artifact = artifact_id
 
-    def collect(self) -> typing.List[NodeVersion]:
+    def collect(self) -> typing.List[ApplicationVersion]:
         connection = HTTPSConnection(host=self.maven)
         connection.request(url=self.versions, method="GET")
         response = connection.getresponse()
@@ -52,7 +52,7 @@ class MavenCentralVersionCollector(VersionCollector, abc.ABC):
         releases = parser.find(".release").text().lstrip().split(" ")
         result = []
         for release in releases:
-            release_version = NodeVersion(self.get_application_name(), release)
+            release_version = ApplicationVersion(self.get_application_name(), release)
             result.append(release_version)
 
         return result
@@ -64,13 +64,13 @@ class ConstantVersionCollector(VersionCollector):
     def get_application_name() -> str:
         return "constant"
 
-    version: NodeVersion
+    version: ApplicationVersion
 
-    def __init__(self, config: Configuration, version: NodeVersion):
+    def __init__(self, config: Configuration, version: ApplicationVersion):
         super().__init__(config)
         self.version = version
 
-    def collect(self) -> typing.List[NodeVersion]:
+    def collect(self) -> typing.List[ApplicationVersion]:
         return [self.version]
 
 
@@ -79,7 +79,7 @@ class MockCollector(VersionCollector):
     def __init__(self, config: Configuration, *args):
         super().__init__(config, *args)
 
-    def collect(self) -> typing.List[NodeVersion]:
+    def collect(self) -> typing.List[ApplicationVersion]:
         return [ZERO_VERSION]
 
     @staticmethod
