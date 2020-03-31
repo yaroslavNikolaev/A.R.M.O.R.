@@ -44,7 +44,7 @@ class SeverityManager(object):
     def get_severity(self, version: ApplicationVersion, channel: Channel, value: int) -> Severity:
         application = version.app
         if application not in self.providers:
-            application = "utils.validators.default"
+            application = "utils.verifiers.default"
         return self.providers[application].get_severity(channel, value)
 
 

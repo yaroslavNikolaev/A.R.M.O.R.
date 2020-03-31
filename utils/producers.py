@@ -8,6 +8,7 @@ from prometheus_client.core import GaugeMetricFamily
 from utils.versions import ApplicationVersion, CHANNELS
 from utils.collectors import VersionCollector
 from scanners import CollectorFactory, SeverityManager
+from utils.verifiers import Severity
 
 
 class AbstractMetricProducer(ABC):
@@ -71,7 +72,10 @@ class CommonMetricProducer(AbstractMetricProducer):
             channel_metric = GaugeMetricFamily(self.info_title, self.version_title, labels=label_titles)
             value = diff.get_channel_version(channel)
             severity = self.severity_manager.get_severity(app_version, channel, value)
-            channel_metric.add_metric([self.installation, app_name, node_name, pod_name, channel.value, severity.value], value)
+            if severity == Severity.NONE:
+                continue
+            channel_metric.add_metric([self.installation, app_name, node_name, pod_name, channel.value, severity.value],
+                                      value)
             result.append(channel_metric)
         return result
 

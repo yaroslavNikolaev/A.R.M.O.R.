@@ -1,5 +1,8 @@
 import abc
+import ssl
 import typing
+import json
+import logging
 from http.client import HTTPSConnection
 from pyquery import PyQuery
 from utils.versions import ApplicationVersion, ZERO_VERSION
@@ -72,6 +75,32 @@ class ConstantVersionCollector(VersionCollector):
 
     def collect(self) -> typing.List[ApplicationVersion]:
         return [self.version]
+
+
+class GitHubVersionCollector(VersionCollector, abc.ABC):
+    git = "api.github.com"
+    template = "/repos/{}/{}/releases"
+    releases: str
+    header = {"User-Agent": "PostmanRuntime/7.23.0"}
+
+    def __init__(self, config: Configuration, owner: str, repo: str):
+        super().__init__(config)
+        self.releases = self.template.format(owner, repo)
+
+    def collect(self) -> typing.List[ApplicationVersion]:
+        connection = HTTPSConnection(host=self.git, context=ssl._create_unverified_context())
+        connection.request(url=self.releases, method="GET", headers=self.header)
+        response = connection.getresponse()
+        resp = json.loads(response.read().decode("utf-8"))
+        result = []
+        app = self.get_application_name()
+        for release in resp:
+            try:
+                result.append(ApplicationVersion(app, release['tag_name']))
+            except ValueError:
+                logging.warning(f"Release {release['tag_name']} has incorrect version structure for GH {app}")
+                continue
+        return result
 
 
 @singleton
