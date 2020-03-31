@@ -3,7 +3,7 @@ import re
 import ssl
 from kubernetes import client
 from utils.versions import ApplicationVersion
-from utils.collectors import VersionCollector, singleton
+from utils.collectors import VersionCollector, GitHubVersionCollector, singleton
 from utils.configuration import Configuration
 from http.client import HTTPSConnection
 from pyquery import PyQuery
@@ -66,35 +66,16 @@ class K8Application(VersionCollector):
 
 
 @singleton
-class K8Releases(VersionCollector):
+class K8Releases(GitHubVersionCollector):
+    owner = "kubernetes"
+    repo = "kubernetes"
 
     @staticmethod
     def get_application_name() -> str:
         return "kubernetes"
 
-    git = "github.com"
-    kubernetes_release = "/kubernetes/kubernetes/releases"
-    stable_versions = '^v\d+\.\d+\.\d+$'
-
     def __init__(self, config: Configuration):
-        super().__init__(config)
-
-    def collect(self) -> typing.List[ApplicationVersion]:
-        connection = HTTPSConnection(host=self.git, context=ssl._create_unverified_context())
-        connection.request(url=self.kubernetes_release, method="GET")
-        response = connection.getresponse()
-        parser = PyQuery(response.read().decode("utf-8"))
-        releases = parser("[href]")("[title]").text().lstrip().split(" ")
-        # todo gather as much as possible versions
-        result = []
-        for release in releases:
-            if not re.search(self.stable_versions, release):
-                continue
-            release_version = ApplicationVersion("kubernetes", release, "k8")
-            result.append(release_version)
-            break
-
-        return result
+        super().__init__(config, self.owner, self.repo)
 
 
 @singleton
