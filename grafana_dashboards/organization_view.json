@@ -33,7 +33,7 @@
         "colorMode": "value",
         "fieldOptions": {
           "calcs": [
-            "mean"
+            "lastNotNull"
           ],
           "defaults": {
             "links": [
@@ -49,34 +49,34 @@
                 "id": 0,
                 "op": "=",
                 "text": "Severity Level : Low",
-                "to": "30",
+                "to": "25",
                 "type": 2,
                 "value": "null"
               },
               {
-                "from": "30",
+                "from": "25",
                 "id": 1,
                 "operator": "",
                 "text": "Severity Level : Moderate",
-                "to": "60",
+                "to": "50",
                 "type": 2,
                 "value": ""
               },
               {
-                "from": "60",
+                "from": "50",
                 "id": 2,
                 "operator": "",
                 "text": "Severity Level : Major",
-                "to": "90",
+                "to": "75",
                 "type": 2,
                 "value": ""
               },
               {
-                "from": "90",
+                "from": "75",
                 "id": 3,
                 "operator": "",
                 "text": "Severity Level : Critical",
-                "to": "120",
+                "to": "10000",
                 "type": 2,
                 "value": ""
               }
@@ -90,36 +90,33 @@
                   "value": null
                 },
                 {
-                  "color": "#EAB839",
-                  "value": 30
+                  "color": "light-yellow",
+                  "value": 25
                 },
                 {
-                  "color": "#6ED0E0",
-                  "value": 60
+                  "color": "light-orange",
+                  "value": 50
                 },
                 {
-                  "color": "#EF843C",
-                  "value": 90
-                },
-                {
-                  "color": "#E24D42",
-                  "value": 120
+                  "color": "semi-dark-red",
+                  "value": 75
                 }
               ]
             },
+            "title": "",
             "unit": "none"
           },
           "overrides": [],
-          "values": true
+          "values": false
         },
-        "graphMode": "none",
-        "justifyMode": "auto",
+        "graphMode": "area",
+        "justifyMode": "center",
         "orientation": "horizontal"
       },
       "pluginVersion": "6.7.1",
       "targets": [
         {
-          "expr": "sum by (installation) ((count by (installation, severity) (armor_metrics)) * (sum by (installation, severity) (severity_factor)))",
+          "expr": "(sum by (installation) ((count by (installation, severity) (armor_metrics)) * (sum by (installation, severity) (severity_factor)))) / (count by (installation) (armor_metrics))",
           "instant": true,
           "interval": "",
           "legendFormat": "Cluster: {{installation}}",
@@ -128,7 +125,8 @@
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Installation severity status",
+      "title": "Installations severity index",
+      "transparent": true,
       "type": "stat"
     }
   ],
@@ -163,5 +161,5 @@
   "variables": {
     "list": []
   },
-  "version": 10
+  "version": 11
 }

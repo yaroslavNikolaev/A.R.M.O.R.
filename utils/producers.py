@@ -169,7 +169,8 @@ class SeverityFactorProducer(AbstractMetricProducer):
     info_title = "severity_factor"
     version_title = "Special metric. Armor uses it in prometheus queries. "
     label_titles = ["installation", "severity"]
-    base = 2
+    # 1,10,100,1000
+    base = 10
 
     def __init__(self, installation: str):
         super().__init__(installation)
