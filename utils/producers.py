@@ -8,7 +8,7 @@ from prometheus_client.core import GaugeMetricFamily
 from utils.versions import ApplicationVersion, CHANNELS
 from utils.collectors import VersionCollector
 from scanners import CollectorFactory, SeverityManager
-from utils.verifiers import Severity
+from utils.verifiers import Severity, SEVERITIES
 
 
 class AbstractMetricProducer(ABC):
@@ -35,6 +35,7 @@ class AbstractMetricProducer(ABC):
 class CommonMetricProducer(AbstractMetricProducer):
     info_title = "armor_metrics"
     version_title = 'Information about internally used applications versions'
+    label_titles = ["installation", "application", "node", "pod", "channel", "severity"]
     internal_collector: VersionCollector
     external_collector: VersionCollector
 
@@ -62,14 +63,13 @@ class CommonMetricProducer(AbstractMetricProducer):
 
     def extract_metrics(self, app_version: ApplicationVersion, versions: typing.Iterator[ApplicationVersion]) -> \
             typing.List[GaugeMetricFamily]:
-        label_titles = ["installation", "application", "node", "pod", "channel", "severity"]
         app_name = app_version.app
         node_name = app_version.node_name
         pod_name = app_version.pod_name
         diff = self.exctract_differences(app_version, versions)
         result = []
         for channel in CHANNELS:
-            channel_metric = GaugeMetricFamily(self.info_title, self.version_title, labels=label_titles)
+            channel_metric = GaugeMetricFamily(self.info_title, self.version_title, labels=self.label_titles)
             value = diff.get_channel_version(channel)
             severity = self.severity_manager.get_severity(app_version, channel, value)
             if severity == Severity.NONE:
@@ -162,3 +162,23 @@ class ApplicationMetricProducer(AbstractMetricProducer):
                 result[application].append(ApplicationVersion(application, version, i.spec.node_name, i.metadata.name))
                 logging.info(f'Application {application} with version {version} on pod {i.metadata.name} was detected')
         return result
+
+
+class SeverityFactorProducer(AbstractMetricProducer):
+    metrics: typing.List[GaugeMetricFamily]
+    info_title = "severity_factor"
+    version_title = "Special metric. Armor uses it in prometheus queries. "
+    label_titles = ["installation", "severity"]
+    base = 2
+
+    def __init__(self, installation: str):
+        super().__init__(installation)
+        self.metrics = []
+        for severity in SEVERITIES:
+            value = pow(self.base, len(SEVERITIES) - len(self.metrics) - 1)
+            severity_factor_metric = GaugeMetricFamily(self.info_title, self.version_title, labels=self.label_titles)
+            severity_factor_metric.add_metric([self.installation, severity.value], value)
+            self.metrics.append(severity_factor_metric)
+
+    def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
+        return self.metrics

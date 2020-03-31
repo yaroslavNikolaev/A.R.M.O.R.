@@ -119,7 +119,7 @@
       "pluginVersion": "6.7.1",
       "targets": [
         {
-          "expr": "count by (installation) (armor_metrics)",
+          "expr": "sum by (installation) ((count by (installation, severity) (armor_metrics)) * (sum by (installation, severity) (severity_factor)))",
           "instant": true,
           "interval": "",
           "legendFormat": "Cluster: {{installation}}",
@@ -163,5 +163,5 @@
   "variables": {
     "list": []
   },
-  "version": 9
+  "version": 10
 }

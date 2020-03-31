@@ -14,6 +14,7 @@ if __name__ == '__main__':
 
     logging.info("A.R.M.O.R is going to create metric producers.")
     name = configuration.name()
+    REGISTRY.register(SeverityFactorProducer(name))
     REGISTRY.register(ApplicationMetricProducer(name, factory))
     REGISTRY.register(KubernetesMetricProducer(name, factory))
 

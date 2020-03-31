@@ -113,7 +113,13 @@
             "lastNotNull"
           ],
           "defaults": {
-            "links": [],
+            "links": [
+              {
+                "targetBlank": true,
+                "title": "details",
+                "url": "http://localhost:3000/d/lc1HdR8Zz/a-r-m-o-r-application-view?orgId=1&var-installation=${installation}&var-severity=critical&var-channel=minor"
+              }
+            ],
             "mappings": [],
             "max": 200,
             "min": 0,
@@ -182,7 +188,13 @@
             "lastNotNull"
           ],
           "defaults": {
-            "links": [],
+            "links": [
+              {
+                "targetBlank": true,
+                "title": "details",
+                "url": "http://localhost:3000/d/lc1HdR8Zz/a-r-m-o-r-application-view?orgId=1&var-installation=${installation}&var-severity=critical&var-channel=release"
+              }
+            ],
             "mappings": [],
             "max": 200,
             "min": 0,
@@ -251,7 +263,13 @@
             "lastNotNull"
           ],
           "defaults": {
-            "links": [],
+            "links": [
+              {
+                "targetBlank": true,
+                "title": "details",
+                "url": "http://localhost:3000/d/lc1HdR8Zz/a-r-m-o-r-application-view?orgId=1&var-installation=${installation}&var-severity=critical&var-channel=build"
+              }
+            ],
             "mappings": [],
             "max": 200,
             "min": 0,
@@ -320,7 +338,13 @@
             "lastNotNull"
           ],
           "defaults": {
-            "links": [],
+            "links": [
+              {
+                "targetBlank": true,
+                "title": "details",
+                "url": "http://localhost:3000/d/lc1HdR8Zz/a-r-m-o-r-application-view?orgId=1&var-installation=${installation}&var-severity=major&var-channel=major"
+              }
+            ],
             "mappings": [],
             "max": 200,
             "min": 0,
@@ -389,7 +413,13 @@
             "lastNotNull"
           ],
           "defaults": {
-            "links": [],
+            "links": [
+              {
+                "targetBlank": true,
+                "title": "details",
+                "url": "http://localhost:3000/d/lc1HdR8Zz/a-r-m-o-r-application-view?orgId=1&var-installation=${installation}&var-severity=major&var-channel=minor"
+              }
+            ],
             "mappings": [],
             "max": 200,
             "min": 0,
@@ -458,7 +488,13 @@
             "lastNotNull"
           ],
           "defaults": {
-            "links": [],
+            "links": [
+              {
+                "targetBlank": true,
+                "title": "details",
+                "url": "http://localhost:3000/d/lc1HdR8Zz/a-r-m-o-r-application-view?orgId=1&var-installation=${installation}&var-severity=major&var-channel=release"
+              }
+            ],
             "mappings": [],
             "max": 200,
             "min": 0,
@@ -527,7 +563,13 @@
             "lastNotNull"
           ],
           "defaults": {
-            "links": [],
+            "links": [
+              {
+                "targetBlank": true,
+                "title": "details",
+                "url": "http://localhost:3000/d/lc1HdR8Zz/a-r-m-o-r-application-view?orgId=1&var-installation=${installation}&var-severity=major&var-channel=build"
+              }
+            ],
             "mappings": [],
             "max": 200,
             "min": 0,
@@ -596,7 +638,13 @@
             "lastNotNull"
           ],
           "defaults": {
-            "links": [],
+            "links": [
+              {
+                "targetBlank": true,
+                "title": "details",
+                "url": "http://localhost:3000/d/lc1HdR8Zz/a-r-m-o-r-application-view?orgId=1&var-installation=${installation}&var-severity=moderate&var-channel=major"
+              }
+            ],
             "mappings": [],
             "max": 200,
             "min": 0,
@@ -740,7 +788,13 @@
             "lastNotNull"
           ],
           "defaults": {
-            "links": [],
+            "links": [
+              {
+                "targetBlank": true,
+                "title": "details",
+                "url": "http://localhost:3000/d/lc1HdR8Zz/a-r-m-o-r-application-view?orgId=1&var-installation=${installation}&var-severity=moderate&var-channel=release"
+              }
+            ],
             "mappings": [],
             "max": 200,
             "min": 0,
@@ -809,7 +863,13 @@
             "lastNotNull"
           ],
           "defaults": {
-            "links": [],
+            "links": [
+              {
+                "targetBlank": true,
+                "title": "details",
+                "url": "http://localhost:3000/d/lc1HdR8Zz/a-r-m-o-r-application-view?orgId=1&var-installation=${installation}&var-severity=moderate&var-channel=build"
+              }
+            ],
             "mappings": [],
             "max": 200,
             "min": 0,
@@ -878,7 +938,13 @@
             "lastNotNull"
           ],
           "defaults": {
-            "links": [],
+            "links": [
+              {
+                "targetBlank": true,
+                "title": "details",
+                "url": "http://localhost:3000/d/lc1HdR8Zz/a-r-m-o-r-application-view?orgId=1&var-installation=${installation}&var-severity=low&var-channel=major"
+              }
+            ],
             "mappings": [],
             "max": 200,
             "min": 0,
@@ -947,7 +1013,13 @@
             "lastNotNull"
           ],
           "defaults": {
-            "links": [],
+            "links": [
+              {
+                "targetBlank": true,
+                "title": "details",
+                "url": "http://localhost:3000/d/lc1HdR8Zz/a-r-m-o-r-application-view?orgId=1&var-installation=${installation}&var-severity=low&var-channel=minor"
+              }
+            ],
             "mappings": [],
             "max": 200,
             "min": 0,
@@ -1016,7 +1088,13 @@
             "lastNotNull"
           ],
           "defaults": {
-            "links": [],
+            "links": [
+              {
+                "targetBlank": true,
+                "title": "details",
+                "url": "http://localhost:3000/d/lc1HdR8Zz/a-r-m-o-r-application-view?orgId=1&var-installation=${installation}&var-severity=low&var-channel=release"
+              }
+            ],
             "mappings": [],
             "max": 200,
             "min": 0,
@@ -1085,7 +1163,13 @@
             "lastNotNull"
           ],
           "defaults": {
-            "links": [],
+            "links": [
+              {
+                "targetBlank": true,
+                "title": "details",
+                "url": "http://localhost:3000/d/lc1HdR8Zz/a-r-m-o-r-application-view?orgId=1&var-installation=${installation}&var-severity=low&var-channel=build"
+              }
+            ],
             "mappings": [],
             "max": 200,
             "min": 0,
@@ -1196,5 +1280,5 @@
   "variables": {
     "list": []
   },
-  "version": 26
+  "version": 27
 }
