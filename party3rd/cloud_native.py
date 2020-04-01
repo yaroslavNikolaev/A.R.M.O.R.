@@ -1,12 +1,8 @@
 import typing
-import re
-import ssl
 from kubernetes import client
 from utils.versions import ApplicationVersion
 from utils.collectors import VersionCollector, GitHubVersionCollector, singleton
 from utils.configuration import Configuration
-from http.client import HTTPSConnection
-from pyquery import PyQuery
 
 
 @singleton
@@ -66,13 +62,39 @@ class K8Application(VersionCollector):
 
 
 @singleton
-class K8Releases(GitHubVersionCollector):
+class K8VersionCollector(GitHubVersionCollector):
     owner = "kubernetes"
     repo = "kubernetes"
 
     @staticmethod
     def get_application_name() -> str:
         return "kubernetes"
+
+    def __init__(self, config: Configuration):
+        super().__init__(config, self.owner, self.repo)
+
+
+@singleton
+class IngressNginxVersionCollector(GitHubVersionCollector):
+    owner = "kubernetes"
+    repo = "ingress-nginx"
+
+    @staticmethod
+    def get_application_name() -> str:
+        return "ingress-nginx"
+
+    def __init__(self, config: Configuration):
+        super().__init__(config, self.owner, self.repo)
+
+
+@singleton
+class IngressGceVersionCollector(GitHubVersionCollector):
+    owner = "kubernetes"
+    repo = "ingress-gce"
+
+    @staticmethod
+    def get_application_name() -> str:
+        return "ingress-gce"
 
     def __init__(self, config: Configuration):
         super().__init__(config, self.owner, self.repo)
@@ -92,3 +114,42 @@ class ArmorCollector(VersionCollector):
     def __init__(self, config: Configuration):
         super().__init__(config)
         self.version = [ApplicationVersion(self.get_application_name(), config.version())]
+
+
+@singleton
+class PrometheusVersionCollector(GitHubVersionCollector):
+    owner = "prometheus"
+    repo = "prometheus"
+
+    @staticmethod
+    def get_application_name() -> str:
+        return "prometheus"
+
+    def __init__(self, config: Configuration):
+        super().__init__(config, self.owner, self.repo)
+
+
+@singleton
+class AlertManagerVersionCollector(GitHubVersionCollector):
+    owner = "prometheus"
+    repo = "alertmanager"
+
+    @staticmethod
+    def get_application_name() -> str:
+        return "alertmanager"
+
+    def __init__(self, config: Configuration):
+        super().__init__(config, self.owner, self.repo)
+
+
+@singleton
+class NodeExporterVersionCollector(GitHubVersionCollector):
+    owner = "prometheus"
+    repo = "node_exporter"
+
+    @staticmethod
+    def get_application_name() -> str:
+        return "node_exporter"
+
+    def __init__(self, config: Configuration):
+        super().__init__(config, self.owner, self.repo)
