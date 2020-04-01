@@ -6,6 +6,10 @@ from kubernetes import config
 from utils.producers import *
 
 if __name__ == '__main__':
+    '''
+    Entry point of A.R.M.O.R. application. 
+    Application expects several configuration files as input (config.ini and application.ini)
+    '''
     logging.info("A.R.M.O.R is going to setup configuration")
     configuration = Configuration()
     factory = CollectorFactory(configuration)

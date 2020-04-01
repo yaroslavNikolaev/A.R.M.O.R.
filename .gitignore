@@ -6,3 +6,5 @@
 /inspectionProfiles/profiles_settings.xml
 /vcs.xml
 /application.ini
+/mapping.json
+/.idea/*
