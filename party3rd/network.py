@@ -13,3 +13,29 @@ class NginxVersionCollector(GitHubVersionCollector):
 
     def __init__(self, config: Configuration):
         super().__init__(config, self.owner, self.repo)
+
+
+@singleton
+class CalicoVersionCollector(GitHubVersionCollector):
+    owner = "projectcalico"
+    repo = "calico"
+
+    @staticmethod
+    def get_application_name() -> str:
+        return "calico"
+
+    def __init__(self, config: Configuration):
+        super().__init__(config, self.owner, self.repo)
+
+
+@singleton
+class HaproxyVersionCollector(GitHubVersionCollector):
+    owner = "haproxy"
+    repo = "haproxy"
+
+    @staticmethod
+    def get_application_name() -> str:
+        return "haproxy"
+
+    def __init__(self, config: Configuration):
+        super().__init__(config, self.owner, self.repo)
