@@ -3,6 +3,7 @@ import ssl
 import typing
 import json
 import logging
+from functools import lru_cache
 from http.client import HTTPSConnection
 from pyquery import PyQuery
 from utils.versions import ApplicationVersion, ZERO_VERSION
@@ -46,6 +47,7 @@ class MavenCentralVersionCollector(VersionCollector, abc.ABC):
         super().__init__(config)
         self.versions = self.template.format(group_id, artifact_id)
         self.artifact = artifact_id
+        self.collect = lru_cache(maxsize=16)(self.collect)
 
     def collect(self) -> typing.List[ApplicationVersion]:
         connection = HTTPSConnection(host=self.maven)
@@ -80,24 +82,46 @@ class ConstantVersionCollector(VersionCollector):
 class GitHubVersionCollector(VersionCollector, abc.ABC):
     git = "api.github.com"
     template = "/repos/{}/{}/releases"
-    releases: str
+    pager = "/repositories/{}/releases?page={}"
     header = {"User-Agent": "PostmanRuntime/7.23.0"}
+    release_pages_to_handle = 3
+    releases: str
 
     def __init__(self, config: Configuration, owner: str, repo: str):
         super().__init__(config)
         self.releases = self.template.format(owner, repo)
+        self.collect = lru_cache(maxsize=16)(self.collect)
 
     def collect(self) -> typing.List[ApplicationVersion]:
         connection = HTTPSConnection(host=self.git, context=ssl._create_unverified_context())
         connection.request(url=self.releases, method="GET", headers=self.header)
         response = connection.getresponse()
         resp = json.loads(response.read().decode("utf-8"))
+        result = self.collect_gh_releases(resp)
+        last_page_number = 1
+        tracker_number = 0
+        for head in response.getheaders():
+            # why don't they introduced 3 headers instead of this bullshit?
+            if head[0] == 'link':
+                last_page = str(head[1]).split(',')[1].split(";")[0].split("/")
+                last_page_number = int(last_page[len(last_page) - 1].split("=")[1][:-1])
+                tracker_number = last_page[4]
+        finish = last_page_number if last_page_number < self.release_pages_to_handle else self.release_pages_to_handle
+        for page in range(2, finish + 1):
+            url = self.pager.format(tracker_number, page)
+            connection.request(url=url, method="GET", headers=self.header)
+            response = connection.getresponse()
+            resp = json.loads(response.read().decode("utf-8"))
+            result += self.collect_gh_releases(resp)
+        return result
+
+    def collect_gh_releases(self, releases) -> typing.List[ApplicationVersion]:
         result = []
         app = self.get_application_name()
-        for release in resp:
+        for release in releases:
             try:
                 result.append(ApplicationVersion(app, release['tag_name']))
-            except ValueError:
+            except (ValueError, TypeError, IndexError):
                 logging.warning(f"Release {release['tag_name']} has incorrect version structure for GH {app}")
                 continue
         return result

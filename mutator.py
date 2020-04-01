@@ -11,10 +11,11 @@ def add_annotation(pod, annotations: dict):
     annos = {}
     anno_exist = pod.metadata.annotations is None
     for annotation in annotations.keys():
-        exist = anno_exist or annotation in i.metadata.annotations.keys()
+        key = armor_template.format(annotation)
+        exist = anno_exist or key in i.metadata.annotations.keys()
         if exist:
             continue
-        annos[armor_template.format(annotation)] = annotations[annotation]
+        annos[key] = annotations[annotation]
     if len(annos) == 0:
         return
     patch = {'metadata': {'annotations': annos}}

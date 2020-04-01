@@ -5,6 +5,20 @@ from prometheus_client.core import REGISTRY
 from kubernetes import config
 from utils.producers import *
 
+
+class ArmorMetricProducer(AbstractMetricProducer):
+    k8: KubernetesMetricProducer
+    app: ApplicationMetricProducer
+
+    def __init__(self, installation: str, factory: CollectorFactory):
+        super().__init__(installation)
+        self.k8 = KubernetesMetricProducer(installation, factory)
+        self.app = ApplicationMetricProducer(installation, factory)
+
+    def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
+        return self.app.collect() + self.k8.collect()
+
+
 if __name__ == '__main__':
     '''
     Entry point of A.R.M.O.R. application. 
@@ -19,8 +33,7 @@ if __name__ == '__main__':
     logging.info("A.R.M.O.R is going to create metric producers.")
     name = configuration.name()
     REGISTRY.register(SeverityFactorProducer(name))
-    REGISTRY.register(ApplicationMetricProducer(name, factory))
-    REGISTRY.register(KubernetesMetricProducer(name, factory))
+    REGISTRY.register(ArmorMetricProducer(name, factory))
 
     port = configuration.port()
     logging.info(f"A.R.M.O.R is going to launch http server on {port}")

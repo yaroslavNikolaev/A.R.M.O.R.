@@ -50,13 +50,13 @@ class CommonMetricProducer(AbstractMetricProducer):
         try:
             external_versions = self.external_collector.collect()
         except Exception:
-            logging.error("Error appears during external version gathering", exc_info=True)
-            return result
+            logging.error(f"Error appears during external version gathering {self.external_collector.__class__}", exc_info=True)
+            return []
         try:
             internal_versions = self.internal_collector.collect()
         except Exception:
-            logging.error("Error appears during external version gathering", exc_info=True)
-            return result
+            logging.error(f"Error appears during internal version gathering {self.internal_collector.__class__}", exc_info=True)
+            return []
         for internal_version in internal_versions:
             result += self.extract_metrics(internal_version, external_versions)
         return result
@@ -126,7 +126,7 @@ class KubernetesMetricProducer(CommonMetricProducer):
 
 class ApplicationMetricProducer(AbstractMetricProducer):
     factory: CollectorFactory
-    constant_version_collector = "utils.constant"
+    constant_version_collector = "utils.collectors.constant"
 
     def __init__(self, installation: str, factory: CollectorFactory):
         super().__init__(installation)

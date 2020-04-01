@@ -4,25 +4,32 @@ import os
 from configparser import ConfigParser
 from argparse import ArgumentParser
 
+KUBE_CONFIG_DEFAULT_LOCATION = os.environ.get('KUBECONFIG', '~/.kube/config')
+
+config = "config"
+
 common = 'common'
 version = 'version'
 name = 'name'
 port = 'port'
-k8_config = 'config_file'
-KUBE_CONFIG_DEFAULT_LOCATION = os.environ.get('KUBECONFIG', '~/.kube/config')
+k8config = 'k8config'
+COMMON = [version, name, port, k8config]
 
 azure = "azure"
 aks = 'aks'
 az_resourceGroup = 'az_resourceGroup'
 az_subscription = 'az_subscription'
 az_token = 'az_token'
+AZURE = [aks, az_resourceGroup, az_subscription, az_token]
 
 gcp = "gcp"
 gcp_project = 'gcp_project'
 gcp_zone = 'gcp_zone'
 gcp_token = 'gcp_token'
+GCP = [gcp_token, gcp_zone, gcp_project]
 
 aws = "aws"
+AWS = []
 
 
 class Configuration(object):
@@ -32,32 +39,44 @@ class Configuration(object):
         args = self.__get_argument_parser()
         # read arguments from the command line and show help if requested[main purpose]!
         args = args.parse_args()
-        config = ConfigParser()
-        config.read('./config.ini')
+        configuration = ConfigParser()
+        configuration.read('./config.ini')
         if args.version:
-            print("A.R.M.O.R. version is " + config[common][version])
+            print("A.R.M.O.R. version is " + configuration[common][version])
             sys.exit()
-        config.read(args.config)
-        if args.port is not None:
-            config[common][port] = str(args.port)
-        if args.k8_config is not None:
-            config[common][k8_config] = str(args.k8_config)
-        self.__config = config
+        dict_args = vars(args)
+        configuration.read(dict_args[config])
+        for arg in dict_args:
+            if dict_args[arg] is not None and arg != config and arg != version:
+                configuration[self.__get_group_by_arg(arg)][arg] = str(dict_args[arg])
+        self.__config = configuration
+
+    def __get_group_by_arg(self, arg: str) -> str:
+        if arg in COMMON:
+            return common
+        elif arg in AZURE:
+            return azure
+        elif arg in GCP:
+            return gcp
+        elif arg in AWS:
+            return aws
+        else:
+            raise ValueError(f'{arg} is not defined in any group')
 
     def __get_argument_parser(self) -> ArgumentParser:
         parser = ArgumentParser(description="A.R.M.O.R. application protects you to be late in cloud")
-        parser.add_argument('config', nargs='?', type=str, default="./application.ini",
-                            help="Configuration file with all necessary value , by default config.ini is taken")
+        parser.add_argument(config, nargs='?', type=str, default="./application.ini",
+                            help="Configuration file with all necessary values , by default application.ini is taken")
         # common
         common_group = parser.add_argument_group(common)
         common_group.add_argument("-V", "--" + version, help="show A.R.M.O.R. version", action="store_true")
         common_group.add_argument("--" + name, default="armor", help="Installation name", type=str)
         common_group.add_argument("--" + port, help="A.R.M.O.R. port to use", type=int)
-        common_group.add_argument("--" + k8_config, help="K8 config file location", type=str)
+        common_group.add_argument("--" + k8config, help="K8 config file location", type=str)
 
         # azure
         azure_group = parser.add_argument_group(azure)
-        azure_group.add_argument("--" + aks, help="Azure Kubernetes service name", )
+        azure_group.add_argument("--" + aks, help="Azure Kubernetes service name", type=str)
         azure_group.add_argument("--" + az_resourceGroup, help="Azure Resource group name", type=str)
         azure_group.add_argument("--" + az_subscription, help="Azure Subscription name", type=str)
         azure_group.add_argument("--" + az_token, help="Azure access token [az account get-access-token]", type=str)
@@ -80,7 +99,7 @@ class Configuration(object):
         return self.__config.getint(common, port)
 
     def kubernetes_config(self) -> str:
-        return self.__config.get(common, k8_config, fallback=KUBE_CONFIG_DEFAULT_LOCATION)
+        return self.__config.get(common, k8config, fallback=KUBE_CONFIG_DEFAULT_LOCATION)
 
     def aks(self) -> str:
         return self.__config.get(azure, aks)

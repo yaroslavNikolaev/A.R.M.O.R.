@@ -1,6 +1,8 @@
 from party3rd.c_plus_clients import AclVersionCollector
+from utils.collectors import singleton
 
 
+@singleton
 class MemoryStoreCollector(AclVersionCollector):
 
     @staticmethod
