@@ -10,7 +10,7 @@ if __name__ == '__main__':
     configuration = Configuration()
     factory = CollectorFactory(configuration)
     # Configs can be set in Configuration class directly or using helper utility
-    config.load_kube_config()
+    config.load_kube_config(configuration.kubernetes_config())
 
     logging.info("A.R.M.O.R is going to create metric producers.")
     name = configuration.name()

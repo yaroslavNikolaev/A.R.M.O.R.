@@ -1,5 +1,6 @@
 import sys
 import logging
+import os
 from configparser import ConfigParser
 from argparse import ArgumentParser
 
@@ -7,8 +8,8 @@ common = 'common'
 version = 'version'
 name = 'name'
 port = 'port'
-kubernetes = 'kubernetes'
-kubernetes_token = 'kubernetes_token'
+k8_config = 'config_file'
+KUBE_CONFIG_DEFAULT_LOCATION = os.environ.get('KUBECONFIG', '~/.kube/config')
 
 azure = "azure"
 aks = 'aks'
@@ -48,11 +49,7 @@ class Configuration(object):
         common_group.add_argument("-V", "--" + version, help="show A.R.M.O.R. version", action="store_true")
         common_group.add_argument("--" + name, default="armor", help="Installation name", type=str)
         common_group.add_argument("--" + port, default=8000, help="A.R.M.O.R. port to use", type=int)
-        common_group.add_argument("--" + kubernetes, help="Http endpoint of kube", type=str)
-        # https://kubernetes.io/docs/reference/access-authn-authz/rbac/#service-account-permissions
-        common_group.add_argument("--" + kubernetes_token, type=str,
-                                  help="Kubernetes access token with rights to see nodes (*admin role can do it)"
-                                       "https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/")
+        common_group.add_argument("--" + k8_config, help="K8 config file location", type=str)
 
         # azure
         azure_group = parser.add_argument_group(azure)
@@ -78,11 +75,8 @@ class Configuration(object):
     def port(self) -> int:
         return self.__config.getint(common, port)
 
-    def kubernetes(self) -> str:
-        return self.__config.get(common, kubernetes)
-
-    def kubernetes_token(self) -> str:
-        return self.__config.get(common, kubernetes_token)
+    def kubernetes_config(self) -> str:
+        return self.__config.get(common, k8_config, fallback=KUBE_CONFIG_DEFAULT_LOCATION)
 
     def aks(self) -> str:
         return self.__config.get(azure, aks)
