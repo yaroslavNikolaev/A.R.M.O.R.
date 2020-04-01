@@ -38,6 +38,10 @@ class Configuration(object):
             print("A.R.M.O.R. version is " + config[common][version])
             sys.exit()
         config.read(args.config)
+        if args.port is not None:
+            config[common][port] = str(args.port)
+        if args.k8_config is not None:
+            config[common][k8_config] = str(args.k8_config)
         self.__config = config
 
     def __get_argument_parser(self) -> ArgumentParser:
@@ -48,7 +52,7 @@ class Configuration(object):
         common_group = parser.add_argument_group(common)
         common_group.add_argument("-V", "--" + version, help="show A.R.M.O.R. version", action="store_true")
         common_group.add_argument("--" + name, default="armor", help="Installation name", type=str)
-        common_group.add_argument("--" + port, default=8000, help="A.R.M.O.R. port to use", type=int)
+        common_group.add_argument("--" + port, help="A.R.M.O.R. port to use", type=int)
         common_group.add_argument("--" + k8_config, help="K8 config file location", type=str)
 
         # azure
