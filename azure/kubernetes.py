@@ -31,9 +31,9 @@ class K8Azure(VersionCollector):
         releases = resp['properties']['controlPlaneProfile']['upgrades']
         result = []
         for release in releases:
-            if 'isPreview' in release and release['isPreview']:
-                continue
-            release_version = ApplicationVersion("kubernetes", release['kubernetesVersion'], "k8")
+            # if 'isPreview' in release and release['isPreview']:
+            #     continue
+            release_version = ApplicationVersion("kubernetes", release['kubernetesVersion'], "node", "k8")
             result += [release_version]
             break
         return result

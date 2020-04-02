@@ -16,7 +16,7 @@ class K8Master(VersionCollector):
 
     def collect(self) -> typing.List[ApplicationVersion]:
         response = client.VersionApi().get_code_with_http_info()
-        master_version = ApplicationVersion("kubernetes", response[0].git_version, "master")
+        master_version = ApplicationVersion("kubernetes", response[0].git_version, "node", "master")
         return [master_version]
 
 
@@ -35,7 +35,7 @@ class K8Worker(VersionCollector):
         for node in ret.items:
             node_name = node.metadata.name
             release = node.status.node_info.kubelet_version
-            node_version = ApplicationVersion("kubernetes", release, node_name)
+            node_version = ApplicationVersion("kubernetes", release, "node", node_name)
             result.append(node_version)
         return result
 

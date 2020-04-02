@@ -23,17 +23,17 @@ class ApplicationVersion(object):
     minor: int
     release: int
     build: int
-    node_name: str
-    pod_name: str
+    resource: str
+    resource_name: str
 
-    def __init__(self, app: str, version: str, node: str = "-", pod: str = "-"):
+    def __init__(self, app: str, version: str, resource: str = "-", resource_name: str = "-"):
         versions = version.split(".")
         self.major = _extract_numbers(versions[0])
         self.minor = _extract_numbers(versions[1])
         self.release = _extract_numbers(versions[2])
         self.build = _extract_numbers(versions[3]) if len(versions) > 3 else 0
-        self.node_name = node
-        self.pod_name = pod
+        self.resource_name = resource_name
+        self.resource = resource
         self.app = app
 
     def __sub__(self, other):
