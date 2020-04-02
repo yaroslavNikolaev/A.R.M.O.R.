@@ -1,17 +1,16 @@
 import typing
 from kubernetes import client
 from utils.versions import ApplicationVersion
-from utils.collectors import VersionCollector, GitHubVersionCollector, singleton
+from utils.collectors import VersionCollector, GitHubVersionCollector
 from utils.configuration import Configuration
 
 
-@singleton
 class K8Master(VersionCollector):
     @staticmethod
     def get_application_name() -> str:
         return "k8master"
 
-    def __init__(self, config: Configuration, ):
+    def __init__(self, config: Configuration):
         super().__init__(config)
 
     def collect(self) -> typing.List[ApplicationVersion]:
@@ -20,7 +19,6 @@ class K8Master(VersionCollector):
         return [master_version]
 
 
-@singleton
 class K8Worker(VersionCollector):
     @staticmethod
     def get_application_name() -> str:
@@ -40,7 +38,6 @@ class K8Worker(VersionCollector):
         return result
 
 
-@singleton
 class K8Application(VersionCollector):
     @staticmethod
     def get_application_name() -> str:
@@ -61,7 +58,6 @@ class K8Application(VersionCollector):
         return result
 
 
-@singleton
 class K8VersionCollector(GitHubVersionCollector):
     owner = "kubernetes"
     repo = "kubernetes"
@@ -74,7 +70,6 @@ class K8VersionCollector(GitHubVersionCollector):
         super().__init__(config, self.owner, self.repo)
 
 
-@singleton
 class IngressNginxVersionCollector(GitHubVersionCollector):
     owner = "kubernetes"
     repo = "ingress-nginx"
@@ -87,7 +82,6 @@ class IngressNginxVersionCollector(GitHubVersionCollector):
         super().__init__(config, self.owner, self.repo)
 
 
-@singleton
 class IngressGceVersionCollector(GitHubVersionCollector):
     owner = "kubernetes"
     repo = "ingress-gce"
@@ -100,7 +94,6 @@ class IngressGceVersionCollector(GitHubVersionCollector):
         super().__init__(config, self.owner, self.repo)
 
 
-@singleton
 class ArmorCollector(VersionCollector):
     version: typing.List[ApplicationVersion]
 
@@ -116,7 +109,6 @@ class ArmorCollector(VersionCollector):
         self.version = [ApplicationVersion(self.get_application_name(), config.version())]
 
 
-@singleton
 class PrometheusVersionCollector(GitHubVersionCollector):
     owner = "prometheus"
     repo = "prometheus"
@@ -129,7 +121,6 @@ class PrometheusVersionCollector(GitHubVersionCollector):
         super().__init__(config, self.owner, self.repo)
 
 
-@singleton
 class AlertManagerVersionCollector(GitHubVersionCollector):
     owner = "prometheus"
     repo = "alertmanager"
@@ -142,7 +133,6 @@ class AlertManagerVersionCollector(GitHubVersionCollector):
         super().__init__(config, self.owner, self.repo)
 
 
-@singleton
 class NodeExporterVersionCollector(GitHubVersionCollector):
     owner = "prometheus"
     repo = "node_exporter"

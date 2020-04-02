@@ -7,9 +7,9 @@ from kubernetes import config, client
 armor_template = "armor.io/{}"
 
 
-def add_annotation(pod, annotations: dict):
+def add_annotation_to_resource(resource, annotations: dict):
     annos = {}
-    anno_exist = pod.metadata.annotations is None
+    anno_exist = resource.metadata.annotations is None
     for annotation in annotations.keys():
         key = armor_template.format(annotation)
         exist = anno_exist or key in i.metadata.annotations.keys()
@@ -20,7 +20,7 @@ def add_annotation(pod, annotations: dict):
         return
     patch = {'metadata': {'annotations': annos}}
     logging.warning(f'Patch {patch}')
-    client.CoreV1Api().patch_namespaced_pod(pod.metadata.name, pod.metadata.namespace, patch)
+    client.AppsV1Api().patch_namespaced_deployment(resource.metadata.name, resource.metadata.namespace, patch)
 
 
 if __name__ == '__main__':
@@ -33,11 +33,11 @@ if __name__ == '__main__':
     config.load_kube_config(configuration.kubernetes_config())
     with open('mapping.json') as json_file:
         mutations = json.load(json_file)
-        ret = client.CoreV1Api().list_pod_for_all_namespaces(watch=False)
+        ret = client.AppsV1Api().list_deployment_for_all_namespaces(watch=False)
         for i in ret.items:
-            pod_name = i.metadata.name
+            dp_name = i.metadata.name
             for mutation in mutations['by_regexp']:
                 if not ("annotations" in mutation and len(mutation["annotations"]) > 0):
                     continue
-                if re.search(mutation['regexp'], pod_name):
-                    add_annotation(i, mutation["annotations"])
+                if re.search(mutation['regexp'], dp_name):
+                    add_annotation_to_resource(i, mutation["annotations"])

@@ -1,8 +1,7 @@
-from utils.collectors import MavenCentralVersionCollector, singleton
+from utils.collectors import MavenCentralVersionCollector
 from utils.configuration import Configuration
 
 
-@singleton
 class SpannerCollector(MavenCentralVersionCollector):
 
     @staticmethod
@@ -16,7 +15,6 @@ class SpannerCollector(MavenCentralVersionCollector):
         super().__init__(config, self.group_id, self.artifact_id)
 
 
-@singleton
 class BigTableCollector(MavenCentralVersionCollector):
 
     @staticmethod

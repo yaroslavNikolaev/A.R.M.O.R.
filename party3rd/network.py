@@ -1,8 +1,7 @@
-from utils.collectors import GitHubVersionCollector, singleton
+from utils.collectors import GitHubVersionCollector
 from utils.configuration import Configuration
 
 
-@singleton
 class NginxVersionCollector(GitHubVersionCollector):
     owner = "nginx"
     repo = "nginx"
@@ -15,7 +14,6 @@ class NginxVersionCollector(GitHubVersionCollector):
         super().__init__(config, self.owner, self.repo)
 
 
-@singleton
 class CalicoVersionCollector(GitHubVersionCollector):
     owner = "projectcalico"
     repo = "calico"
@@ -28,7 +26,6 @@ class CalicoVersionCollector(GitHubVersionCollector):
         super().__init__(config, self.owner, self.repo)
 
 
-@singleton
 class HaproxyVersionCollector(GitHubVersionCollector):
     owner = "haproxy"
     repo = "haproxy"

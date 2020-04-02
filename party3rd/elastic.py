@@ -1,4 +1,4 @@
-from utils.collectors import GitHubVersionCollector, singleton
+from utils.collectors import GitHubVersionCollector
 from utils.configuration import Configuration
 from abc import ABC
 
@@ -12,7 +12,6 @@ class BeatsVersionCollector(GitHubVersionCollector, ABC):
         super().__init__(config, owner, self.repo)
 
 
-@singleton
 class FilebeatCollector(BeatsVersionCollector):
 
     @staticmethod
@@ -20,7 +19,6 @@ class FilebeatCollector(BeatsVersionCollector):
         return "filebeat"
 
 
-@singleton
 class MetricbeatCollector(BeatsVersionCollector):
 
     @staticmethod
@@ -28,7 +26,6 @@ class MetricbeatCollector(BeatsVersionCollector):
         return "metricbeat"
 
 
-@singleton
 class AuditbeatCollector(BeatsVersionCollector):
 
     @staticmethod
@@ -36,7 +33,6 @@ class AuditbeatCollector(BeatsVersionCollector):
         return "auditbeat"
 
 
-@singleton
 class JournalbeatCollector(BeatsVersionCollector):
 
     @staticmethod
@@ -44,7 +40,6 @@ class JournalbeatCollector(BeatsVersionCollector):
         return "journalbeat"
 
 
-@singleton
 class KibanaVersionCollector(GitHubVersionCollector):
     repo = "kibana"
 
@@ -56,7 +51,6 @@ class KibanaVersionCollector(GitHubVersionCollector):
         super().__init__(config, owner, self.repo)
 
 
-@singleton
 class ElasticsearchVersionCollector(GitHubVersionCollector):
     repo = "elasticsearch"
 
@@ -68,7 +62,6 @@ class ElasticsearchVersionCollector(GitHubVersionCollector):
         super().__init__(config, owner, self.repo)
 
 
-@singleton
 class LogstashVersionCollector(GitHubVersionCollector):
     repo = "logstash"
 

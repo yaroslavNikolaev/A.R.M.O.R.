@@ -1,8 +1,7 @@
-from utils.collectors import GitHubVersionCollector, singleton
+from utils.collectors import GitHubVersionCollector
 from utils.configuration import Configuration
 
 
-@singleton
 class VeleroVersionCollector(GitHubVersionCollector):
     owner = "vmware-tanzu"
     repo = "velero"

@@ -1,4 +1,4 @@
-from utils.collectors import GitHubVersionCollector, singleton
+from utils.collectors import GitHubVersionCollector
 from utils.configuration import Configuration
 from abc import ABC
 
@@ -11,7 +11,6 @@ class AclVersionCollector(GitHubVersionCollector, ABC):
         super().__init__(config, self.owner, self.repo)
 
 
-@singleton
 class RedisVersionCollector(AclVersionCollector):
 
     @staticmethod

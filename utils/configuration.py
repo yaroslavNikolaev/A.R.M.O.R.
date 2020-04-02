@@ -13,6 +13,7 @@ version = 'version'
 name = 'name'
 port = 'port'
 k8config = 'k8config'
+gh = 'gh_auth'
 COMMON = [version, name, port, k8config]
 
 azure = "azure"
@@ -73,6 +74,7 @@ class Configuration(object):
         common_group.add_argument("--" + name, default="armor", help="Installation name", type=str)
         common_group.add_argument("--" + port, help="A.R.M.O.R. port to use", type=int)
         common_group.add_argument("--" + k8config, help="K8 config file location", type=str)
+        common_group.add_argument("--" + gh, help="GH basic auth token base64(username:token)", type=str)
 
         # azure
         azure_group = parser.add_argument_group(azure)
@@ -121,6 +123,9 @@ class Configuration(object):
 
     def gcp_token(self) -> str:
         return self.__config.get(gcp, gcp_token)
+
+    def gh_auth(self) -> str:
+        return self.__config.get(common, gh)
 
     def kubernetes_application(self) -> str:
         if self.__config.has_section(aws):

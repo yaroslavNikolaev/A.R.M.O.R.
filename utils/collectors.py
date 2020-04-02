@@ -1,27 +1,13 @@
-import abc
-import ssl
-import typing
-import json
-import logging
-from functools import lru_cache
+import ssl, typing, json, logging, abc
 from http.client import HTTPSConnection
+from cachetools.func import ttl_cache
 from pyquery import PyQuery
 from utils.versions import ApplicationVersion, ZERO_VERSION
 from utils.configuration import Configuration
 
 
-def singleton(class_):
-    instances = {}
-
-    def get_instance(*args, **kwargs):
-        if class_ not in instances:
-            instances[class_] = class_(*args, **kwargs)
-        return instances[class_]
-
-    return get_instance
-
-
 class VersionCollector(abc.ABC):
+    singleton = True
 
     @abc.abstractmethod
     def __init__(self, config: Configuration, *args):
@@ -47,8 +33,8 @@ class MavenCentralVersionCollector(VersionCollector, abc.ABC):
         super().__init__(config)
         self.versions = self.template.format(group_id, artifact_id)
         self.artifact = artifact_id
-        self.collect = lru_cache(maxsize=16)(self.collect)
 
+    @ttl_cache(maxsize=16, ttl=200)
     def collect(self) -> typing.List[ApplicationVersion]:
         connection = HTTPSConnection(host=self.maven)
         connection.request(url=self.versions, method="GET")
@@ -64,6 +50,7 @@ class MavenCentralVersionCollector(VersionCollector, abc.ABC):
 
 
 class ConstantVersionCollector(VersionCollector):
+    singleton = False
 
     @staticmethod
     def get_application_name() -> str:
@@ -83,15 +70,16 @@ class GitHubVersionCollector(VersionCollector, abc.ABC):
     git = "api.github.com"
     template = "/repos/{}/{}/releases"
     pager = "/repositories/{}/releases?page={}"
-    header = {"User-Agent": "PostmanRuntime/7.23.0"}
-    release_pages_to_handle = 3
+    header: dict
+    release_pages_to_handle = 2  # =release_pages_to_handle*30 releases
     releases: str
 
     def __init__(self, config: Configuration, owner: str, repo: str):
         super().__init__(config)
         self.releases = self.template.format(owner, repo)
-        self.collect = lru_cache(maxsize=16)(self.collect)
+        self.header = {'Authorization': 'Basic ' + config.gh_auth(), "User-Agent": "PostmanRuntime/7.23.0"}
 
+    @ttl_cache(maxsize=16, ttl=200)
     def collect(self) -> typing.List[ApplicationVersion]:
         connection = HTTPSConnection(host=self.git, context=ssl._create_unverified_context())
         connection.request(url=self.releases, method="GET", headers=self.header)
@@ -127,7 +115,6 @@ class GitHubVersionCollector(VersionCollector, abc.ABC):
         return result
 
 
-@singleton
 class MockCollector(VersionCollector):
     def __init__(self, config: Configuration, *args):
         super().__init__(config, *args)

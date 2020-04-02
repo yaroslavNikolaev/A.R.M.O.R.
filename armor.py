@@ -7,20 +7,23 @@ from utils.producers import *
 
 
 class ArmorMetricProducer(AbstractMetricProducer):
-    k8: KubernetesMetricProducer
-    ds: DaemonSetMetricProducer
-    deploy: DeploymentMetricProducer
-    sts: StatefulSetMetricProducer
+    producers: typing.List[AbstractMetricProducer]
 
     def __init__(self, installation: str, factory: CollectorFactory):
         super().__init__(installation)
-        self.k8 = KubernetesMetricProducer(installation, factory)
-        self.ds = DaemonSetMetricProducer(installation, factory)
-        self.deploy = DeploymentMetricProducer(installation, factory)
-        self.sts = StatefulSetMetricProducer(installation, factory)
+        self.producers = []
+        self.producers.append(DaemonSetMetricProducer(installation, factory))
+        self.producers.append(DeploymentMetricProducer(installation, factory))
+        self.producers.append(StatefulSetMetricProducer(installation, factory))
+        self.producers.append(NamespaceMetricProducer(installation, factory))
+        self.producers.append(NodeMetricProducer(installation, factory))
+        self.producers.append(KubernetesMetricProducer(installation, factory))
 
     def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
-        return self.ds.collect() + self.deploy.collect() + self.sts.collect() + self.k8.collect()
+        result = []
+        for producer in self.producers:
+            result += producer.collect()
+        return result
 
 
 if __name__ == '__main__':

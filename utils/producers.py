@@ -173,7 +173,9 @@ class ApplicationMetricProducer(AbstractMetricProducer, ABC):
             versions = []
             if item.metadata.annotations is not None:
                 versions += self.parse_annotations(item.metadata.annotations, name)
-            if item.spec.template.metadata is not None and item.spec.template.metadata.annotations is not None:
+            if hasattr(item.spec, "template") and \
+                    item.spec.template.metadata is not None and \
+                    item.spec.template.metadata.annotations is not None:
                 versions += self.parse_annotations(item.spec.template.metadata.annotations, name)
 
             for version in versions:
@@ -206,7 +208,7 @@ class ApplicationMetricProducer(AbstractMetricProducer, ABC):
             application = annotation.split(sep="/", maxsplit=1)[1]
             version = annotations[annotation]
             result.append(ApplicationVersion(application, version, resource, name))
-            logging.warning(f'{resource} {name} with application {application}:{version} was detected')
+            logging.info(f'{resource} {name} with application {application}:{version} was detected')
         return result
 
 
@@ -232,3 +234,19 @@ class StatefulSetMetricProducer(ApplicationMetricProducer):
 
     def get_resource_type(self) -> str:
         return "statefulset"
+
+
+class NamespaceMetricProducer(ApplicationMetricProducer):
+    def get_k8_resources(self) -> typing.Iterable:
+        return client.CoreV1Api().list_namespace(watch=False).items
+
+    def get_resource_type(self) -> str:
+        return "namespace"
+
+
+class NodeMetricProducer(ApplicationMetricProducer):
+    def get_k8_resources(self) -> typing.Iterable:
+        return client.CoreV1Api().list_namespace(watch=False).items
+
+    def get_resource_type(self) -> str:
+        return "node"

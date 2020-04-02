@@ -1,12 +1,11 @@
 from http.client import HTTPSConnection
 from utils.versions import ApplicationVersion
-from utils.collectors import VersionCollector, singleton
+from utils.collectors import VersionCollector
 from utils.configuration import Configuration
 import typing
 import json
 
 
-@singleton
 class K8Azure(VersionCollector):
     @staticmethod
     def get_application_name() -> str:

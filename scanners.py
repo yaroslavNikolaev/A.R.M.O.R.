@@ -17,6 +17,7 @@ class CollectorFactory(object):
 
     def __init__(self, config: Configuration):
         self.collectors = collect_application_subclasses(VersionCollector)
+        self.collectors_inst = dict()
         self.config = config
 
     def instantiate_collector(self, application: str, *args) -> VersionCollector:
@@ -24,7 +25,10 @@ class CollectorFactory(object):
         if application not in self.collectors:
             logging.warning(f"Be aware, Application collector is not exist for {application}. Mock will be used")
             return MockCollector(self.config)
-        return self.collectors[application](self.config, *args)
+        metaclass = self.collectors[application]
+        if metaclass.singleton and application not in self.collectors_inst:
+            self.collectors_inst[application] = metaclass(self.config, *args)
+        return self.collectors_inst[application] if metaclass.singleton else metaclass(self.config, *args)
 
     # i'm not sure about code location
     def instantiate_k8_service_collector(self) -> VersionCollector:
