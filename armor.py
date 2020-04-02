@@ -1,5 +1,6 @@
 import time
 import prometheus_client
+import concurrent.futures
 from utils.configuration import Configuration
 from prometheus_client.core import REGISTRY
 from kubernetes import config
@@ -21,8 +22,12 @@ class ArmorMetricProducer(AbstractMetricProducer):
 
     def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
         result = []
-        for producer in self.producers:
-            result += producer.collect()
+        futures = []
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for producer in self.producers:
+                futures.append(executor.submit(producer.collect))
+            for future in futures:
+                result += future.result()
         return result
 
 
