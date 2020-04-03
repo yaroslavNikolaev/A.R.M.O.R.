@@ -1,4 +1,4 @@
-import inspect
+import inspect, threading
 import logging
 from party3rd import *
 from gcp import *
@@ -14,6 +14,7 @@ class CollectorFactory(object):
     _instance = None
     collectors: typing.Dict[str, VersionCollector.__class__]
     config: Configuration
+    lock = threading.Lock()
 
     def __init__(self, config: Configuration):
         self.collectors = collect_application_subclasses(VersionCollector)
@@ -26,9 +27,14 @@ class CollectorFactory(object):
             logging.warning(f"Be aware, Application collector is not exist for {application}. Mock will be used")
             return MockCollector(self.config)
         metaclass = self.collectors[application]
-        if metaclass.singleton and application not in self.collectors_inst:
+        is_constant = ConstantVersionCollector.__name__ in str(metaclass)
+        # do they have in python normal memory model?
+        self.lock.acquire()
+        # only constant collector is not singleton
+        if not is_constant and application not in self.collectors_inst:
             self.collectors_inst[application] = metaclass(self.config, *args)
-        return self.collectors_inst[application] if metaclass.singleton else metaclass(self.config, *args)
+        self.lock.release()
+        return self.collectors_inst[application] if not is_constant else metaclass(self.config, *args)
 
     # i'm not sure about code location
     def instantiate_k8_service_collector(self) -> VersionCollector:

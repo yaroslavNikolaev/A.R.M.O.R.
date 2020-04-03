@@ -1,6 +1,5 @@
 import time
 import prometheus_client
-import concurrent.futures
 from utils.configuration import Configuration
 from prometheus_client.core import REGISTRY
 from kubernetes import config

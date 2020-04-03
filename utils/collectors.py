@@ -7,7 +7,6 @@ from utils.configuration import Configuration
 
 
 class VersionCollector(abc.ABC):
-    singleton = True
 
     @abc.abstractmethod
     def __init__(self, config: Configuration, *args):
@@ -50,7 +49,6 @@ class MavenCentralVersionCollector(VersionCollector, abc.ABC):
 
 
 class ConstantVersionCollector(VersionCollector):
-    singleton = False
 
     @staticmethod
     def get_application_name() -> str:

@@ -1,6 +1,7 @@
 import copy
 import typing
 import logging
+import concurrent.futures
 from abc import ABC, abstractmethod
 from kubernetes import client
 from prometheus_client.core import GaugeMetricFamily
@@ -149,7 +150,28 @@ class KubernetesMetricProducer(CommonMetricProducer):
 
 class ApplicationMetricProducer(AbstractMetricProducer, ABC):
     factory: CollectorFactory
+    application: str
+    versions: typing.List[ApplicationVersion]
     constant_version_collector = "utils.collectors.constant"
+
+    def __init__(self, installation: str, app: str, versions: typing.List[ApplicationVersion],
+                 factory: CollectorFactory):
+        super().__init__(installation)
+        self.application = app
+        self.versions = versions
+        self.factory = factory
+
+    def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
+        result = []
+        for application_version in self.versions:
+            internal = self.factory.instantiate_collector(self.constant_version_collector, application_version)
+            external = self.factory.instantiate_collector(self.application)
+            result += CommonMetricProducer(self.installation, internal, external).collect_metrics()
+        return result
+
+
+class KubernetesResourceMetricProducer(AbstractMetricProducer, ABC):
+    factory: CollectorFactory
     armor = "armor.io"
 
     def __init__(self, installation: str, factory: CollectorFactory):
@@ -158,12 +180,15 @@ class ApplicationMetricProducer(AbstractMetricProducer, ABC):
 
     def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
         result = []
-        for application in self.extract_applications_versions().items():
-            application_name = application[0]
-            for application_version in application[1]:
-                internal = self.factory.instantiate_collector(self.constant_version_collector, application_version)
-                external = self.factory.instantiate_collector(application_name)
-                result += CommonMetricProducer(self.installation, internal, external).collect_metrics()
+        futures = []
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for application in self.extract_applications_versions().items():
+                versions = application[1]
+                app = application[0]
+                app_collector = ApplicationMetricProducer(self.installation, app, versions, self.factory)
+                futures.append(executor.submit(app_collector.collect))
+            for future in futures:
+                result += future.result()
         return result
 
     def extract_applications_versions(self) -> typing.Dict[str, typing.List[ApplicationVersion]]:
@@ -212,7 +237,7 @@ class ApplicationMetricProducer(AbstractMetricProducer, ABC):
         return result
 
 
-class DaemonSetMetricProducer(ApplicationMetricProducer):
+class DaemonSetMetricProducer(KubernetesResourceMetricProducer):
     def get_k8_resources(self) -> typing.Iterable:
         return client.AppsV1Api().list_daemon_set_for_all_namespaces(watch=False).items
 
@@ -220,7 +245,7 @@ class DaemonSetMetricProducer(ApplicationMetricProducer):
         return "deamonset"
 
 
-class DeploymentMetricProducer(ApplicationMetricProducer):
+class DeploymentMetricProducer(KubernetesResourceMetricProducer):
     def get_k8_resources(self) -> typing.Iterable:
         return client.AppsV1Api().list_deployment_for_all_namespaces(watch=False).items
 
@@ -228,7 +253,7 @@ class DeploymentMetricProducer(ApplicationMetricProducer):
         return "deployment"
 
 
-class StatefulSetMetricProducer(ApplicationMetricProducer):
+class StatefulSetMetricProducer(KubernetesResourceMetricProducer):
     def get_k8_resources(self) -> typing.Iterable:
         return client.AppsV1Api().list_stateful_set_for_all_namespaces(watch=False).items
 
@@ -236,7 +261,7 @@ class StatefulSetMetricProducer(ApplicationMetricProducer):
         return "statefulset"
 
 
-class NamespaceMetricProducer(ApplicationMetricProducer):
+class NamespaceMetricProducer(KubernetesResourceMetricProducer):
     def get_k8_resources(self) -> typing.Iterable:
         return client.CoreV1Api().list_namespace(watch=False).items
 
@@ -244,7 +269,7 @@ class NamespaceMetricProducer(ApplicationMetricProducer):
         return "namespace"
 
 
-class NodeMetricProducer(ApplicationMetricProducer):
+class NodeMetricProducer(KubernetesResourceMetricProducer):
     def get_k8_resources(self) -> typing.Iterable:
         return client.CoreV1Api().list_namespace(watch=False).items
 

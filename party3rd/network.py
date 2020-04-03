@@ -36,3 +36,15 @@ class HaproxyVersionCollector(GitHubVersionCollector):
 
     def __init__(self, config: Configuration):
         super().__init__(config, self.owner, self.repo)
+
+
+class IstioVersionCollector(GitHubVersionCollector):
+    owner = "istio"
+    repo = "istio"
+
+    @staticmethod
+    def get_application_name() -> str:
+        return "istio"
+
+    def __init__(self, config: Configuration):
+        super().__init__(config, self.owner, self.repo)

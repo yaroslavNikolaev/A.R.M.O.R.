@@ -37,3 +37,27 @@ class FluentdVersionCollector(GitHubVersionCollector):
 
     def __init__(self, config: Configuration):
         super().__init__(config, self.owner, self.repo)
+
+
+class ClamavVersionCollector(GitHubVersionCollector):
+    owner = "Cisco-Talos"
+    repo = "clamav-devel"
+
+    @staticmethod
+    def get_application_name() -> str:
+        return "clamav"
+
+    def __init__(self, config: Configuration):
+        super().__init__(config, self.owner, self.repo)
+
+
+class ZookeeperVersionCollector(GitHubVersionCollector):
+    owner = "apache"
+    repo = "zookeeper"
+
+    @staticmethod
+    def get_application_name() -> str:
+        return "zookeeper"
+
+    def __init__(self, config: Configuration):
+        super().__init__(config, self.owner, self.repo)
