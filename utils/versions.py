@@ -54,6 +54,19 @@ class ApplicationVersion(object):
         elif channel == Channel.MAJOR:
             return self.major
 
+    def set_channel_version(self, channel: Channel, value: int):
+        if channel == Channel.BUILD:
+            self.build = value
+        elif channel == Channel.RELEASE:
+            self.release = value
+        elif channel == Channel.MINOR:
+            self.minor = value
+        elif channel == Channel.MAJOR:
+            self.major = value
+
+    def as_text(self):
+        return "v." + str(self.major) + "." + str(self.minor) + "." + str(self.release) + "-" + str(self.build)
+
 
 CHANNELS = [Channel.MAJOR, Channel.MINOR, Channel.RELEASE, Channel.BUILD]
 ZERO_VERSION = ApplicationVersion("", "v0.0.0")

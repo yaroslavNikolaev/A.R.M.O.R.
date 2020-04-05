@@ -56,7 +56,7 @@ class SeverityFactorProducer(AbstractMetricProducer):
 class CommonMetricProducer(AbstractMetricProducer):
     info_title = "armor_metrics"
     version_title = 'Information about internally used applications versions'
-    label_titles = ["installation", "application", "resource", "name", "channel", "severity"]
+    label_titles = ["installation", "application", "resource", "severity", "source version", "target version"]
     internal_collector: VersionCollector
     external_collector: VersionCollector
     ex_clazz: str
@@ -88,9 +88,8 @@ class CommonMetricProducer(AbstractMetricProducer):
 
     def extract_metrics(self, app_version: ApplicationVersion, versions: typing.Iterator[ApplicationVersion]) -> \
             typing.List[GaugeMetricFamily]:
-        app_name = app_version.app
-        resource = app_version.resource
-        name = app_version.resource_name
+        app_name = app_version.app.split(".")[-1]
+        resource = app_version.resource + " : " + app_version.resource_name
         diff = self.exctract_differences(app_version, versions)
         result = []
         for channel in CHANNELS:
@@ -99,8 +98,10 @@ class CommonMetricProducer(AbstractMetricProducer):
             severity = self.severity_manager.get_severity(app_version, channel, value)
             if severity == Severity.NONE:
                 continue
-            channel_metric.add_metric([self.installation, app_name, resource, name, channel.value, severity.value],
-                                      value)
+            copied = copy.copy(app_version)
+            copied.set_channel_version(channel, copied.get_channel_version(channel) + diff.get_channel_version(channel))
+            labels = [self.installation, app_name, resource, severity.value, app_version.as_text(), copied.as_text()]
+            channel_metric.add_metric(labels, value)
             result.append(channel_metric)
         return result
 

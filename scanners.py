@@ -29,6 +29,8 @@ class CollectorFactory(object):
         metaclass = self.collectors[application]
         is_constant = ConstantVersionCollector.__name__ in str(metaclass)
         # do they have in python normal memory model?
+        if application in self.collectors_inst:
+            return self.collectors_inst[application]
         self.lock.acquire()
         # only constant collector is not singleton
         if not is_constant and application not in self.collectors_inst:
