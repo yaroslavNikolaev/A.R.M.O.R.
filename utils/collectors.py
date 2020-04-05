@@ -33,7 +33,8 @@ class MavenCentralVersionCollector(VersionCollector, abc.ABC):
         self.versions = self.template.format(group_id, artifact_id)
         self.artifact = artifact_id
 
-    @ttl_cache(maxsize=16, ttl=200)
+    # 1 hour
+    @ttl_cache(maxsize=16, ttl=3600)
     def collect(self) -> typing.List[ApplicationVersion]:
         connection = HTTPSConnection(host=self.maven)
         connection.request(url=self.versions, method="GET")
@@ -77,7 +78,8 @@ class GitHubVersionCollector(VersionCollector, abc.ABC):
         self.releases = self.template.format(owner, repo)
         self.header = {'Authorization': 'Basic ' + config.gh_auth(), "User-Agent": "PostmanRuntime/7.23.0"}
 
-    @ttl_cache(maxsize=16, ttl=200)
+    # 1 hour
+    @ttl_cache(maxsize=16, ttl=3600)
     def collect(self) -> typing.List[ApplicationVersion]:
         connection = HTTPSConnection(host=self.git, context=ssl._create_unverified_context())
         connection.request(url=self.releases, method="GET", headers=self.header)

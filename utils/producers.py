@@ -182,6 +182,7 @@ class KubernetesResourceMetricProducer(AbstractMetricProducer, ABC):
     def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
         result = []
         futures = []
+        # todo think about necessity of this action.
         with concurrent.futures.ThreadPoolExecutor() as executor:
             for application in self.extract_applications_versions().items():
                 versions = application[1]
