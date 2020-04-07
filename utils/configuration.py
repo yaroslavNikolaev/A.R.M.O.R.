@@ -1,10 +1,12 @@
 import sys
 import logging
 import os
+import shutil
 from configparser import ConfigParser
 from argparse import ArgumentParser
 
 KUBE_CONFIG_DEFAULT_LOCATION = os.environ.get('KUBECONFIG', '~/.kube/config')
+KUBE_CONFIG_LOCATION = "./k8config"
 
 config = "config"
 
@@ -51,6 +53,13 @@ class Configuration(object):
             if dict_args[arg] is not None and arg != config and arg != version:
                 configuration[self.__get_group_by_arg(arg)][arg] = str(dict_args[arg])
         self.__config = configuration
+        self.__copy_config()
+
+    # in order to allow mount secret in k8
+    def __copy_config(self):
+        location = self.kubernetes_config()
+        shutil.copy(location, KUBE_CONFIG_LOCATION)
+        self.__config[common][k8config] = KUBE_CONFIG_LOCATION
 
     def __get_group_by_arg(self, arg: str) -> str:
         if arg in COMMON:

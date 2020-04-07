@@ -3,7 +3,7 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": "prometheus",
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 2,
-  "iteration": 1585764078019,
+  "iteration": 1585916806449,
   "links": [],
   "panels": [
     {
@@ -190,7 +190,7 @@
           "mappingType": 1,
           "pattern": "Value",
           "thresholds": [],
-          "type": "number",
+          "type": "hidden",
           "unit": "short"
         },
         {
@@ -448,7 +448,7 @@
           "text": "striim-spa",
           "value": "striim-spa"
         },
-        "datasource": "Prometheus",
+        "datasource": "prometheus",
         "definition": "label_values(armor_metrics, installation)",
         "hide": 0,
         "includeAll": false,
@@ -470,12 +470,7 @@
       },
       {
         "datasource": null,
-        "filters": [
-          {
-            "condition": "",
-            "key": ""
-          }
-        ],
+        "filters": [],
         "hide": 0,
         "label": "",
         "name": "Filters",
@@ -485,7 +480,7 @@
     ]
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-6h",
     "to": "now"
   },
   "timepicker": {
@@ -500,5 +495,5 @@
   "variables": {
     "list": []
   },
-  "version": 32
+  "version": 34
 }

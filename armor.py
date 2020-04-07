@@ -25,7 +25,7 @@ class ArmorMetricProducer(AbstractMetricProducer):
     def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
         return self.state
 
-    # each 10 min
+    # each 10 min , in order to prevent timeouts on prometheus side
     @ttl_cache(maxsize=4, ttl=600)
     def prepare_metrics(self):
         result = []
