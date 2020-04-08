@@ -43,22 +43,29 @@ if __name__ == '__main__':
     Entry point of A.R.M.O.R. application. 
     Application expects several configuration files as input (config.ini and application.ini)
     '''
-    logging.info("A.R.M.O.R is going to setup configuration")
-    configuration = Configuration()
-    factory = CollectorFactory(configuration)
-    # Configs can be set in Configuration class directly or using helper utility
-    config.load_kube_config(configuration.kubernetes_config())
+    try:
+        logging.info("A.R.M.O.R is going to setup configuration")
+        configuration = Configuration()
+        factory = CollectorFactory(configuration)
+        # Configs can be set in Configuration class directly or using helper utility
+        if configuration.is_internal():
+            config.load_incluster_config()
+        else:
+            config.load_kube_config(configuration.kubernetes_config())
 
-    logging.info("A.R.M.O.R is going to create metric producers.")
-    name = configuration.name()
-    REGISTRY.register(SeverityFactorProducer(name))
-    armor = ArmorMetricProducer(name, factory)
-    armor.prepare_metrics()
-    REGISTRY.register(armor)
-
-    port = configuration.port()
-    logging.info(f"A.R.M.O.R is going to launch http server on {port}")
-    prometheus_client.start_http_server(port)
-    while True:
+        logging.info("A.R.M.O.R is going to create metric producers.")
+        name = configuration.name()
+        REGISTRY.register(SeverityFactorProducer(name))
+        armor = ArmorMetricProducer(name, factory)
         armor.prepare_metrics()
-        time.sleep(1)
+        REGISTRY.register(armor)
+        port = configuration.port()
+        logging.info(f"A.R.M.O.R is going to launch http server on {port}")
+        prometheus_client.start_http_server(port)
+        while True:
+            armor.prepare_metrics()
+            time.sleep(1)
+
+    except Exception as e:
+        logging.warning(f'Error startup', exc_info=True)
+        raise e

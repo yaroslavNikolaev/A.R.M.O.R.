@@ -16,6 +16,7 @@ name = 'name'
 port = 'port'
 k8config = 'k8config'
 gh = 'gh_auth'
+mode = 'mode'
 COMMON = [version, name, port, k8config]
 
 azure = "azure"
@@ -34,6 +35,9 @@ GCP = [gcp_token, gcp_zone, gcp_project]
 aws = "aws"
 AWS = []
 
+
+internal = "internal"
+external = "external"
 
 class Configuration(object):
     __config: ConfigParser
@@ -80,10 +84,12 @@ class Configuration(object):
         # common
         common_group = parser.add_argument_group(common)
         common_group.add_argument("-V", "--" + version, help="show A.R.M.O.R. version", action="store_true")
-        common_group.add_argument("--" + name, default="armor", help="Installation name", type=str)
+        common_group.add_argument("--" + name, help="Installation name", type=str)
         common_group.add_argument("--" + port, help="A.R.M.O.R. port to use", type=int)
         common_group.add_argument("--" + k8config, help="K8 config file location", type=str)
         common_group.add_argument("--" + gh, help="GH basic auth token base64(username:token)", type=str)
+        common_group.add_argument("--" + mode, type=str, choices=[internal, external],
+                                  help="Armor mode. Internal means use SA to login , External means use config")
 
         # azure
         azure_group = parser.add_argument_group(azure)
@@ -105,6 +111,9 @@ class Configuration(object):
 
     def version(self) -> str:
         return self.__config.get(common, version)
+
+    def is_internal(self) -> str:
+        return self.__config.get(common, mode) == internal
 
     def port(self) -> int:
         return self.__config.getint(common, port)
