@@ -2,6 +2,7 @@ import sys
 import logging
 import os
 import shutil
+import kubernetes.config
 from configparser import ConfigParser
 from argparse import ArgumentParser
 
@@ -17,7 +18,7 @@ port = 'port'
 k8config = 'k8config'
 gh = 'gh_auth'
 mode = 'mode'
-COMMON = [version, name, port, k8config]
+COMMON = [version, name, port, k8config, mode]
 
 azure = "azure"
 aks = 'aks'
@@ -35,9 +36,9 @@ GCP = [gcp_token, gcp_zone, gcp_project]
 aws = "aws"
 AWS = []
 
-
 internal = "internal"
 external = "external"
+
 
 class Configuration(object):
     __config: ConfigParser
@@ -57,13 +58,13 @@ class Configuration(object):
             if dict_args[arg] is not None and arg != config and arg != version:
                 configuration[self.__get_group_by_arg(arg)][arg] = str(dict_args[arg])
         self.__config = configuration
-        self.__copy_config()
-
-    # in order to allow mount secret in k8
-    def __copy_config(self):
-        location = self.kubernetes_config()
-        shutil.copy(location, KUBE_CONFIG_LOCATION)
-        self.__config[common][k8config] = KUBE_CONFIG_LOCATION
+        # Configs can be set in Configuration class directly or using helper utility
+        if self.__config.get(common, mode) == internal:
+            kubernetes.config.load_incluster_config()
+        else:
+            external_k8_config = self.__config.get(common, k8config, fallback=KUBE_CONFIG_DEFAULT_LOCATION)
+            shutil.copy(external_k8_config, KUBE_CONFIG_LOCATION)
+            kubernetes.config.load_kube_config()
 
     def __get_group_by_arg(self, arg: str) -> str:
         if arg in COMMON:
@@ -112,14 +113,8 @@ class Configuration(object):
     def version(self) -> str:
         return self.__config.get(common, version)
 
-    def is_internal(self) -> str:
-        return self.__config.get(common, mode) == internal
-
     def port(self) -> int:
         return self.__config.getint(common, port)
-
-    def kubernetes_config(self) -> str:
-        return self.__config.get(common, k8config, fallback=KUBE_CONFIG_DEFAULT_LOCATION)
 
     def aks(self) -> str:
         return self.__config.get(azure, aks)

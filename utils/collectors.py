@@ -1,5 +1,4 @@
-import ssl, typing, json, logging, abc
-from http.client import HTTPSConnection
+import typing, logging, abc, requests
 from cachetools.func import ttl_cache
 from pyquery import PyQuery
 from utils.versions import ApplicationVersion, ZERO_VERSION
@@ -23,29 +22,22 @@ class VersionCollector(abc.ABC):
 
 
 class MavenCentralVersionCollector(VersionCollector, abc.ABC):
-    maven = "mvnrepository.com"
-    template = "/artifact/{}/{}"
+    maven = "https://mvnrepository.com/artifact/{}/{}"
     versions: str
-    artifact: str
 
     def __init__(self, config: Configuration, group_id: str, artifact_id: str):
         super().__init__(config)
-        self.versions = self.template.format(group_id, artifact_id)
-        self.artifact = artifact_id
+        self.versions = self.maven.format(group_id, artifact_id)
 
     # 1 hour
     @ttl_cache(maxsize=16, ttl=3600)
     def collect(self) -> typing.List[ApplicationVersion]:
-        connection = HTTPSConnection(host=self.maven)
-        connection.request(url=self.versions, method="GET")
-        response = connection.getresponse()
-        parser = PyQuery(response.read().decode("utf-8"))
-        releases = parser.find(".release").text().lstrip().split(" ")
+        response = requests.get(self.versions)
+        releases = PyQuery(response.text).find(".release").text().lstrip().split(" ")
         result = []
         for release in releases:
             release_version = ApplicationVersion(self.get_application_name(), release)
             result.append(release_version)
-
         return result
 
 
@@ -66,42 +58,52 @@ class ConstantVersionCollector(VersionCollector):
 
 
 class GitHubVersionCollector(VersionCollector, abc.ABC):
-    git = "api.github.com"
-    template = "/repos/{}/{}/releases"
-    pager = "/repositories/{}/releases?page={}"
+    git_release = "https://api.github.com/repos/{}/{}/releases"
+    git_release_pager = "https://api.github.com/repositories/{}/releases?page={}"
+    releases: str
     header: dict
     release_pages_to_handle = 2  # =release_pages_to_handle*30 releases
-    releases: str
 
     def __init__(self, config: Configuration, owner: str, repo: str):
         super().__init__(config)
-        self.releases = self.template.format(owner, repo)
+        self.releases = self.git_release.format(owner, repo)
         self.header = {'Authorization': 'Basic ' + config.gh_auth(), "User-Agent": "PostmanRuntime/7.23.0"}
 
     # 1 hour
     @ttl_cache(maxsize=16, ttl=3600)
     def collect(self) -> typing.List[ApplicationVersion]:
-        connection = HTTPSConnection(host=self.git, context=ssl._create_unverified_context())
-        connection.request(url=self.releases, method="GET", headers=self.header)
-        response = connection.getresponse()
-        resp = json.loads(response.read().decode("utf-8"))
+        logging.warning(f"Collect GH data {self.get_application_name()}")
+        response = requests.get(self.releases, headers=self.header)
+        if response.status_code != 200:
+            logging.warning(f"Collect GH data response: {response.status_code}")
+            return []
+        resp = response.json()
         result = self.collect_gh_releases(resp)
-        last_page_number = 1
-        tracker_number = 0
-        for head in response.getheaders():
-            # why don't they introduced 3 headers instead of this bullshit?
-            if head[0] == 'link':
-                last_page = str(head[1]).split(',')[1].split(";")[0].split("/")
-                last_page_number = int(last_page[len(last_page) - 1].split("=")[1][:-1])
-                tracker_number = last_page[4]
-        finish = last_page_number if last_page_number < self.release_pages_to_handle else self.release_pages_to_handle
+        release_details = self.extract_release_details(response)
+        last_page = release_details[1]
+        finish = last_page if last_page < self.release_pages_to_handle else self.release_pages_to_handle
         for page in range(2, finish + 1):
-            url = self.pager.format(tracker_number, page)
-            connection.request(url=url, method="GET", headers=self.header)
-            response = connection.getresponse()
-            resp = json.loads(response.read().decode("utf-8"))
+            url = self.git_release_pager.format(release_details[0], page)
+            response = requests.get(url, headers=self.header)
+            if response.status_code != 200:
+                logging.warning(f"Collect GH data response: {response.status_code}")
+                break
+            resp = response.json()
             result += self.collect_gh_releases(resp)
         return result
+
+    @staticmethod
+    def extract_release_details(response) -> tuple:
+        tracker_number = ''
+        last_page_number = 0
+        if 'link' in response.headers:
+            # why don't they introduced 3 headers instead of this bullshit?
+            links = response.headers['link']
+            last_page = str(links).split(',')[1].split(";")[0].split("/")
+            last_page_number = int(last_page[len(last_page) - 1].split("=")[1][:-1])
+            tracker_number = last_page[4]
+            logging.info(f"Number of release pages are {last_page_number}")
+        return tracker_number, last_page_number
 
     def collect_gh_releases(self, releases) -> typing.List[ApplicationVersion]:
         result = []

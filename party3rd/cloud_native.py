@@ -94,19 +94,16 @@ class IngressGceVersionCollector(GitHubVersionCollector):
         super().__init__(config, self.owner, self.repo)
 
 
-class ArmorCollector(VersionCollector):
-    version: typing.List[ApplicationVersion]
-
-    def collect(self) -> typing.List[ApplicationVersion]:
-        return self.version
+class ArmorCollector(GitHubVersionCollector):
+    owner = "yaroslavNikolaev"
+    repo = "A.R.M.O.R."
 
     @staticmethod
     def get_application_name() -> str:
         return "armor"
 
     def __init__(self, config: Configuration):
-        super().__init__(config)
-        self.version = [ApplicationVersion(self.get_application_name(), config.version())]
+        super().__init__(config, self.owner, self.repo)
 
 
 class PrometheusVersionCollector(GitHubVersionCollector):

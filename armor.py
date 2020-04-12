@@ -2,7 +2,6 @@ import time
 import prometheus_client
 from utils.configuration import Configuration
 from prometheus_client.core import REGISTRY
-from kubernetes import config
 from cachetools.func import ttl_cache
 from utils.producers import *
 
@@ -47,11 +46,6 @@ if __name__ == '__main__':
         logging.info("A.R.M.O.R is going to setup configuration")
         configuration = Configuration()
         factory = CollectorFactory(configuration)
-        # Configs can be set in Configuration class directly or using helper utility
-        if configuration.is_internal():
-            config.load_incluster_config()
-        else:
-            config.load_kube_config(configuration.kubernetes_config())
 
         logging.info("A.R.M.O.R is going to create metric producers.")
         name = configuration.name()
