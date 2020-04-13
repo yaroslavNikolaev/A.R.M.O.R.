@@ -6,7 +6,7 @@ import typing
 
 class Severity(Enum):
     NONE = "none"
-    LOW = "low"
+    NEGLIGIBLE = "negligible"
     MODERATE = "moderate"
     MAJOR = "major"
     CRITICAL = "critical"
@@ -72,14 +72,14 @@ class DefaultMapSeverityVerifier(MapSeverityVerifier):
         Severity.CRITICAL: 4,
     }
     release = {
-        Severity.LOW: 1,
+        Severity.NEGLIGIBLE: 1,
         Severity.MODERATE: 2,
         Severity.MAJOR: 4,
         Severity.CRITICAL: 8,
     }
 
     build = {
-        Severity.LOW: 2,
+        Severity.NEGLIGIBLE: 2,
         Severity.MODERATE: 4,
         Severity.MAJOR: 8,
         Severity.CRITICAL: 16,
@@ -102,4 +102,4 @@ class DefaultMapSeverityVerifier(MapSeverityVerifier):
         return "default"
 
 
-SEVERITIES = [Severity.CRITICAL, Severity.MAJOR, Severity.MODERATE, Severity.LOW]
+SEVERITIES = [Severity.CRITICAL, Severity.MAJOR, Severity.MODERATE, Severity.NEGLIGIBLE]

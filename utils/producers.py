@@ -9,6 +9,7 @@ from scanners import CollectorFactory, SeverityManager
 from utils.verifiers import Severity, SEVERITIES
 
 MIN_TTL = 601
+COMMON_LABEL_TITLES = ["cluster", "severity"]
 
 
 class AbstractMetricProducer(ABC):
@@ -36,7 +37,6 @@ class SeverityFactorProducer(AbstractMetricProducer):
     metrics: typing.List[GaugeMetricFamily]
     info_title = "severity_factor"
     version_title = "Special metric. Armor uses it in prometheus queries. "
-    label_titles = ["installation", "severity"]
     # 1,10,100,1000
     base = 10
 
@@ -45,7 +45,7 @@ class SeverityFactorProducer(AbstractMetricProducer):
         self.metrics = []
         for severity in SEVERITIES:
             value = pow(self.base, len(SEVERITIES) - len(self.metrics) - 1)
-            severity_factor_metric = GaugeMetricFamily(self.info_title, self.version_title, labels=self.label_titles)
+            severity_factor_metric = GaugeMetricFamily(self.info_title, self.version_title, labels=COMMON_LABEL_TITLES)
             severity_factor_metric.add_metric([self.cluster, severity.value], value)
             self.metrics.append(severity_factor_metric)
 
@@ -56,7 +56,7 @@ class SeverityFactorProducer(AbstractMetricProducer):
 class CommonMetricProducer(AbstractMetricProducer):
     info_title = "armor_metrics"
     version_title = 'Information about internally used applications versions'
-    label_titles = ["cluster", "resource", "severity", "tool", "application", "vendor"]
+    label_titles = COMMON_LABEL_TITLES + ["resource", "tool", "using", "vendor"]
     internal_collector: VersionCollector
     external_collector: VersionCollector
     ex_clazz: str
@@ -100,7 +100,7 @@ class CommonMetricProducer(AbstractMetricProducer):
                 continue
             copied = copy.copy(app_version)
             copied.set_channel_version(channel, copied.get_channel_version(channel) + diff.get_channel_version(channel))
-            labels = [self.cluster, resource, severity.value, app_name, app_version.as_text(), copied.as_text()]
+            labels = [self.cluster, severity.value, resource, app_name, app_version.as_text(), copied.as_text()]
             channel_metric.add_metric(labels, value)
             result.append(channel_metric)
         return result
