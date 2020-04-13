@@ -1,12 +1,11 @@
 import sys
 import logging
-import os
 import shutil
 import kubernetes.config
 from configparser import ConfigParser
 from argparse import ArgumentParser
 
-KUBE_CONFIG_DEFAULT_LOCATION = os.environ.get('KUBECONFIG', '~/.kube/config')
+KUBE_CONFIG_DEFAULT_LOCATION = "./kubeconfig"
 KUBE_CONFIG_LOCATION = "./k8config"
 
 config = "config"
@@ -48,6 +47,7 @@ class Configuration(object):
         # read arguments from the command line and show help if requested[main purpose]!
         args = args.parse_args()
         configuration = ConfigParser()
+        # todo re implement from default helm values file.
         configuration.read('./config.ini')
         if args.version:
             print("A.R.M.O.R. version is " + configuration[common][version])

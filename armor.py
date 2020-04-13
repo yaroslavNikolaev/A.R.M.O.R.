@@ -10,22 +10,20 @@ class ArmorMetricProducer(AbstractMetricProducer):
     producers: typing.List[AbstractMetricProducer]
     state: typing.List[GaugeMetricFamily]
 
-    def __init__(self, installation: str, factory: CollectorFactory):
-        super().__init__(installation)
+    def __init__(self, cluster: str, factory: CollectorFactory):
+        super().__init__(cluster)
         self.state = []
         self.producers = []
-        self.producers.append(DaemonSetMetricProducer(installation, factory))
-        self.producers.append(DeploymentMetricProducer(installation, factory))
-        self.producers.append(StatefulSetMetricProducer(installation, factory))
-        self.producers.append(NamespaceMetricProducer(installation, factory))
-        self.producers.append(NodeMetricProducer(installation, factory))
-        self.producers.append(KubernetesMetricProducer(installation, factory))
+        self.producers.append(DaemonSetMetricProducer(cluster, factory))
+        self.producers.append(DeploymentMetricProducer(cluster, factory))
+        self.producers.append(StatefulSetMetricProducer(cluster, factory))
+        self.producers.append(NamespaceMetricProducer(cluster, factory))
+        self.producers.append(NodeMetricProducer(cluster, factory))
+        self.producers.append(KubernetesMetricProducer(cluster, factory))
 
     def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
         return self.state
 
-    # each 10 min , in order to prevent timeouts on prometheus side
-    @ttl_cache(maxsize=4, ttl=600)
     def prepare_metrics(self):
         result = []
         futures = []
@@ -48,9 +46,9 @@ if __name__ == '__main__':
         factory = CollectorFactory(configuration)
 
         logging.info("A.R.M.O.R is going to create metric producers.")
-        name = configuration.name()
-        REGISTRY.register(SeverityFactorProducer(name))
-        armor = ArmorMetricProducer(name, factory)
+        cluster = configuration.name()
+        REGISTRY.register(SeverityFactorProducer(cluster))
+        armor = ArmorMetricProducer(cluster, factory)
         armor.prepare_metrics()
         REGISTRY.register(armor)
         port = configuration.port()

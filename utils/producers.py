@@ -1,7 +1,5 @@
-import copy
-import typing
-import logging
-import concurrent.futures
+import copy, typing, logging, concurrent.futures
+from cachetools.func import ttl_cache
 from abc import ABC, abstractmethod
 from kubernetes import client
 from prometheus_client.core import GaugeMetricFamily
@@ -10,15 +8,17 @@ from utils.collectors import VersionCollector
 from scanners import CollectorFactory, SeverityManager
 from utils.verifiers import Severity, SEVERITIES
 
+MIN_TTL = 601
+
 
 class AbstractMetricProducer(ABC):
     active = False
-    installation: str
+    cluster: str
     severity_manager = SeverityManager()
 
     @abstractmethod
-    def __init__(self, installation: str):
-        self.installation = installation
+    def __init__(self, cluster: str):
+        self.cluster = cluster
 
     def collect(self) -> typing.List[GaugeMetricFamily]:
         try:
@@ -40,13 +40,13 @@ class SeverityFactorProducer(AbstractMetricProducer):
     # 1,10,100,1000
     base = 10
 
-    def __init__(self, installation: str):
-        super().__init__(installation)
+    def __init__(self, cluster: str):
+        super().__init__(cluster)
         self.metrics = []
         for severity in SEVERITIES:
             value = pow(self.base, len(SEVERITIES) - len(self.metrics) - 1)
             severity_factor_metric = GaugeMetricFamily(self.info_title, self.version_title, labels=self.label_titles)
-            severity_factor_metric.add_metric([self.installation, severity.value], value)
+            severity_factor_metric.add_metric([self.cluster, severity.value], value)
             self.metrics.append(severity_factor_metric)
 
     def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
@@ -56,14 +56,14 @@ class SeverityFactorProducer(AbstractMetricProducer):
 class CommonMetricProducer(AbstractMetricProducer):
     info_title = "armor_metrics"
     version_title = 'Information about internally used applications versions'
-    label_titles = ["installation", "application", "resource", "severity", "source version", "target version"]
+    label_titles = ["cluster", "resource", "severity", "tool", "application", "vendor"]
     internal_collector: VersionCollector
     external_collector: VersionCollector
     ex_clazz: str
     in_clazz: str
 
-    def __init__(self, installation: str, internal: VersionCollector, external: VersionCollector):
-        super().__init__(installation)
+    def __init__(self, cluster: str, internal: VersionCollector, external: VersionCollector):
+        super().__init__(cluster)
         self.internal_collector = internal
         self.external_collector = external
         self.active = True
@@ -100,7 +100,7 @@ class CommonMetricProducer(AbstractMetricProducer):
                 continue
             copied = copy.copy(app_version)
             copied.set_channel_version(channel, copied.get_channel_version(channel) + diff.get_channel_version(channel))
-            labels = [self.installation, app_name, resource, severity.value, app_version.as_text(), copied.as_text()]
+            labels = [self.cluster, resource, severity.value, app_name, app_version.as_text(), copied.as_text()]
             channel_metric.add_metric(labels, value)
             result.append(channel_metric)
         return result
@@ -125,11 +125,12 @@ class CommonMetricProducer(AbstractMetricProducer):
 
 class KubernetesMetricProducer(CommonMetricProducer):
 
-    def __init__(self, installation: str, factory: CollectorFactory):
+    def __init__(self, cluster: str, factory: CollectorFactory):
         k8_internal = factory.instantiate_collector("party3rd.cloud_native.k8")
         k8_external = factory.instantiate_k8_service_collector()
-        super().__init__(installation, k8_internal, k8_external)
+        super().__init__(cluster, k8_internal, k8_external)
 
+    @ttl_cache(ttl=MIN_TTL + 443, maxsize=4)
     def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
         if not self.active:
             return []
@@ -155,9 +156,9 @@ class ApplicationMetricProducer(AbstractMetricProducer, ABC):
     versions: typing.List[ApplicationVersion]
     constant_version_collector = "utils.collectors.constant"
 
-    def __init__(self, installation: str, app: str, versions: typing.List[ApplicationVersion],
+    def __init__(self, cluster: str, app: str, versions: typing.List[ApplicationVersion],
                  factory: CollectorFactory):
-        super().__init__(installation)
+        super().__init__(cluster)
         self.application = app
         self.versions = versions
         self.factory = factory
@@ -167,7 +168,7 @@ class ApplicationMetricProducer(AbstractMetricProducer, ABC):
         for application_version in self.versions:
             internal = self.factory.instantiate_collector(self.constant_version_collector, application_version)
             external = self.factory.instantiate_collector(self.application)
-            result += CommonMetricProducer(self.installation, internal, external).collect_metrics()
+            result += CommonMetricProducer(self.cluster, internal, external).collect_metrics()
         return result
 
 
@@ -175,8 +176,8 @@ class KubernetesResourceMetricProducer(AbstractMetricProducer, ABC):
     factory: CollectorFactory
     armor = "armor.io"
 
-    def __init__(self, installation: str, factory: CollectorFactory):
-        super().__init__(installation)
+    def __init__(self, cluster: str, factory: CollectorFactory):
+        super().__init__(cluster)
         self.factory = factory
 
     def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
@@ -187,7 +188,7 @@ class KubernetesResourceMetricProducer(AbstractMetricProducer, ABC):
             for application in self.extract_applications_versions().items():
                 versions = application[1]
                 app = application[0]
-                app_collector = ApplicationMetricProducer(self.installation, app, versions, self.factory)
+                app_collector = ApplicationMetricProducer(self.cluster, app, versions, self.factory)
                 futures.append(executor.submit(app_collector.collect))
             for future in futures:
                 result += future.result()
@@ -246,6 +247,10 @@ class DaemonSetMetricProducer(KubernetesResourceMetricProducer):
     def get_resource_type(self) -> str:
         return "deamonset"
 
+    @ttl_cache(ttl=MIN_TTL + 307, maxsize=4)
+    def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
+        return super().collect_metrics()
+
 
 class DeploymentMetricProducer(KubernetesResourceMetricProducer):
     def get_k8_resources(self) -> typing.Iterable:
@@ -253,6 +258,10 @@ class DeploymentMetricProducer(KubernetesResourceMetricProducer):
 
     def get_resource_type(self) -> str:
         return "deployment"
+
+    @ttl_cache(ttl=MIN_TTL, maxsize=4)
+    def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
+        return super().collect_metrics()
 
 
 class StatefulSetMetricProducer(KubernetesResourceMetricProducer):
@@ -262,6 +271,10 @@ class StatefulSetMetricProducer(KubernetesResourceMetricProducer):
     def get_resource_type(self) -> str:
         return "statefulset"
 
+    @ttl_cache(ttl=MIN_TTL + 61, maxsize=4)
+    def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
+        return super().collect_metrics()
+
 
 class NamespaceMetricProducer(KubernetesResourceMetricProducer):
     def get_k8_resources(self) -> typing.Iterable:
@@ -270,6 +283,10 @@ class NamespaceMetricProducer(KubernetesResourceMetricProducer):
     def get_resource_type(self) -> str:
         return "namespace"
 
+    @ttl_cache(ttl=MIN_TTL + 227, maxsize=4)
+    def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
+        return super().collect_metrics()
+
 
 class NodeMetricProducer(KubernetesResourceMetricProducer):
     def get_k8_resources(self) -> typing.Iterable:
@@ -277,3 +294,7 @@ class NodeMetricProducer(KubernetesResourceMetricProducer):
 
     def get_resource_type(self) -> str:
         return "node"
+
+    @ttl_cache(ttl=MIN_TTL + 139, maxsize=4)
+    def collect_metrics(self) -> typing.List[GaugeMetricFamily]:
+        return super().collect_metrics()
