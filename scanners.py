@@ -14,7 +14,7 @@ class CollectorFactory(object):
     _instance = None
     collectors: typing.Dict[str, VersionCollector.__class__]
     config: Configuration
-    lock = threading.Lock()
+    _lock = threading.Lock()
 
     def __init__(self, config: Configuration):
         self.collectors = collect_application_subclasses(VersionCollector)
@@ -31,11 +31,10 @@ class CollectorFactory(object):
         # do they have in python normal memory model?
         if application in self.collectors_inst:
             return self.collectors_inst[application]
-        self.lock.acquire()
         # only constant collector is not singleton
-        if not is_constant and application not in self.collectors_inst:
-            self.collectors_inst[application] = metaclass(self.config, *args)
-        self.lock.release()
+        with self._lock:
+            if not is_constant and application not in self.collectors_inst:
+                self.collectors_inst[application] = metaclass(self.config, *args)
         return self.collectors_inst[application] if not is_constant else metaclass(self.config, *args)
 
     # i'm not sure about code location

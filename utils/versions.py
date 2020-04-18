@@ -64,8 +64,14 @@ class ApplicationVersion(object):
         elif channel == Channel.MAJOR:
             self.major = value
 
-    def as_text(self):
+    def __str__(self):
         return "v." + str(self.major) + "." + str(self.minor) + "." + str(self.release) + "-" + str(self.build)
+
+    def short_app_name(self):
+        return self.app.split(".")[-1]
+
+    def resource_definition(self):
+        return self.resource + " : " + self.resource_name
 
 
 CHANNELS = [Channel.MAJOR, Channel.MINOR, Channel.RELEASE, Channel.BUILD]
