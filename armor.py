@@ -10,6 +10,7 @@ if __name__ == '__main__':
     try:
         logging.info("A.R.M.O.R is going to setup configuration")
         configuration = Configuration()
+        configuration.load_k8_config()
         factory = CollectorFactory(configuration)
         # move to factory as soon as new type of storage will be introduced (add to auto doc as well)
         storage = prometheus.PrometheusStorage(configuration)

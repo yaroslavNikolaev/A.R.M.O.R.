@@ -58,7 +58,8 @@ class Configuration(object):
             if dict_args[arg] is not None and arg != config and arg != version:
                 configuration[self.__get_group_by_arg(arg)][arg] = str(dict_args[arg])
         self.__config = configuration
-        # Configs can be set in Configuration class directly or using helper utility
+
+    def load_k8_config(self):
         if self.__config.get(common, mode) == internal:
             kubernetes.config.load_incluster_config()
         else:
