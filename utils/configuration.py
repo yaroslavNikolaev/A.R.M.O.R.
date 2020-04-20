@@ -1,16 +1,9 @@
-import sys
-import logging
-import shutil
-import kubernetes.config
-from configparser import ConfigParser
+import sys, logging, yaml
 from argparse import ArgumentParser
 
-KUBE_CONFIG_DEFAULT_LOCATION = "./kubeconfig"
-KUBE_CONFIG_LOCATION = "./k8config"
+K8_CONFIG_DEFAULT_LOCATION = "./armor-io/templates/config"
 
 config = "config"
-
-common = 'common'
 version = 'version'
 name = 'name'
 port = 'port'
@@ -40,58 +33,53 @@ external = "external"
 
 
 class Configuration(object):
-    __config: ConfigParser
+    __config = dict()
 
     def __init__(self):
         args = self.__get_argument_parser()
         # read arguments from the command line and show help if requested[main purpose]!
         args = args.parse_args()
-        configuration = ConfigParser()
-        # todo re implement from default helm values file.
-        configuration.read('./config.ini')
+        with open('./armor-io/values.yaml', "r") as yml:
+            self.__config.update(yaml.load(yml, Loader=yaml.FullLoader))
+        with open('./armor-io/Chart.yaml', "r") as yml:
+            self.__config.update(yaml.load(yml, Loader=yaml.FullLoader))
         if args.version:
-            print("A.R.M.O.R. version is " + configuration[common][version])
+            print("A.R.M.O.R. version is " + self.__config[version])
             sys.exit()
+
         dict_args = vars(args)
-        configuration.read(dict_args[config])
+        with open(dict_args[config], "r") as yml:
+            self.__config.update(yaml.load(yml, Loader=yaml.FullLoader))
         for arg in dict_args:
             if dict_args[arg] is not None and arg != config and arg != version:
-                configuration[self.__get_group_by_arg(arg)][arg] = str(dict_args[arg])
-        self.__config = configuration
+                group = self.__get_group_by_arg(arg)
+                if group is None:
+                    self.__config[arg] = str(dict_args[arg])
+                else:
+                    self.__config[group][arg] = str(dict_args[arg])
 
-    def load_k8_config(self):
-        if self.__config.get(common, mode) == internal:
-            kubernetes.config.load_incluster_config()
-        else:
-            external_k8_config = self.__config.get(common, k8config, fallback=KUBE_CONFIG_DEFAULT_LOCATION)
-            shutil.copy(external_k8_config, KUBE_CONFIG_LOCATION)
-            kubernetes.config.load_kube_config()
-
-    def __get_group_by_arg(self, arg: str) -> str:
-        if arg in COMMON:
-            return common
-        elif arg in AZURE:
+    def __get_group_by_arg(self, arg: str):
+        if arg in AZURE:
             return azure
         elif arg in GCP:
             return gcp
         elif arg in AWS:
             return aws
         else:
-            raise ValueError(f'{arg} is not defined in any group')
+            return None
 
     def __get_argument_parser(self) -> ArgumentParser:
         parser = ArgumentParser(description="A.R.M.O.R. application protects you to be late in cloud")
-        parser.add_argument(config, nargs='?', type=str, default="./application.ini",
-                            help="Configuration file with all necessary values , by default application.ini is taken")
+        parser.add_argument(config, nargs='?', type=str, default="./application.yaml",
+                            help="Configuration file with all necessary values , by default application.yaml is taken")
         # common
-        common_group = parser.add_argument_group(common)
-        common_group.add_argument("-V", "--" + version, help="show A.R.M.O.R. version", action="store_true")
-        common_group.add_argument("--" + name, help="Installation name", type=str)
-        common_group.add_argument("--" + port, help="A.R.M.O.R. port to use", type=int)
-        common_group.add_argument("--" + k8config, help="K8 config file location", type=str)
-        common_group.add_argument("--" + gh, help="GH basic auth token base64(username:token)", type=str)
-        common_group.add_argument("--" + mode, type=str, choices=[internal, external],
-                                  help="Armor mode. Internal means use SA to login , External means use config")
+        parser.add_argument("-V", "--" + version, help="show A.R.M.O.R. version", action="store_true")
+        parser.add_argument("--" + name, help="Installation name", type=str)
+        parser.add_argument("--" + port, help="A.R.M.O.R. port to use", type=int)
+        parser.add_argument("--" + k8config, help="K8 config file location", type=str)
+        parser.add_argument("--" + gh, help="GH basic auth token base64(username:token)", type=str)
+        parser.add_argument("--" + mode, type=str, choices=[internal, external],
+                            help="Armor mode. Internal means use SA to login , External means use config")
 
         # azure
         azure_group = parser.add_argument_group(azure)
@@ -109,45 +97,48 @@ class Configuration(object):
         return parser
 
     def name(self) -> str:
-        return self.__config.get(common, name)
+        return self.__config[name]
 
-    def version(self) -> str:
-        return self.__config.get(common, version)
+    def config(self) -> str:
+        return self.__config.get(k8config, K8_CONFIG_DEFAULT_LOCATION)
 
     def port(self) -> int:
-        return self.__config.getint(common, port)
+        return int(self.__config[port])
+
+    def internal(self) -> bool:
+        return self.__config[mode] == internal
 
     def aks(self) -> str:
-        return self.__config.get(azure, aks)
+        return self.__config[azure].get(aks)
 
-    def az_resourceGroup(self) -> str:
-        return self.__config.get(azure, az_resourceGroup)
+    def az_resource_group(self) -> str:
+        return self.__config[azure].get(az_resourceGroup)
 
     def az_subscription(self) -> str:
-        return self.__config.get(azure, az_subscription)
+        return self.__config[azure].get(az_subscription)
 
     def az_token(self) -> str:
-        return self.__config.get(azure, az_token)
+        return self.__config[azure].get(az_token)
 
     def gcp_project(self) -> str:
-        return self.__config.get(gcp, gcp_project)
+        return self.__config[gcp].get(gcp_project)
 
     def gcp_zone(self) -> str:
-        return self.__config.get(gcp, gcp_zone)
+        return self.__config[gcp].get(gcp_zone)
 
     def gcp_token(self) -> str:
-        return self.__config.get(gcp, gcp_token)
+        return self.__config[gcp].get(gcp_token)
 
     def gh_auth(self) -> str:
-        return self.__config.get(common, gh)
+        return self.__config.get(gh)
 
-    def kubernetes_application(self) -> str:
-        if self.__config.has_section(aws):
+    def cloud(self) -> str:
+        if aws in self.__config:
             logging.warning("AWS is not supported yet , Mock will be used to cover this area")
-            return "aws.kubernetes.eks"
-        elif self.__config.has_section(gcp):
-            return "gcp.kubernetes.gke"
-        elif self.__config.has_section(azure):
-            return "azure.kubernetes.aks"
+            return aws
+        elif gcp in self.__config:
+            return gcp
+        elif azure in self.__config:
+            return azure
         else:
-            return "party3rd.cloud_native.kubernetes"
+            return "default"

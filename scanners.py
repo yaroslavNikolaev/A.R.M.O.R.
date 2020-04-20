@@ -1,5 +1,4 @@
-import inspect, threading
-import logging
+import inspect, threading, logging
 from party3rd import *
 from gcp import *
 from aws import *
@@ -36,11 +35,6 @@ class CollectorFactory(object):
             if not is_constant and application not in self.collectors_inst:
                 self.collectors_inst[application] = metaclass(self.config, *args)
         return self.collectors_inst[application] if not is_constant else metaclass(self.config, *args)
-
-    # i'm not sure about code location
-    def instantiate_k8_service_collector(self) -> VersionCollector:
-        k8_service = self.config.kubernetes_application()
-        return self.instantiate_collector(k8_service)
 
 
 class SeverityManager(object):

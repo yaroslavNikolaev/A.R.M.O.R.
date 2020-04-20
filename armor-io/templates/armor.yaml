@@ -46,10 +46,10 @@ spec:
         resources:
 {{ toYaml .Values.deployment.resources | indent 10}}
         volumeMounts:
-        - mountPath: /armor/application.ini
+        - mountPath: /armor/application.yaml
           name: application
           readOnly: true
-          subPath: application.ini
+          subPath: application.yaml
         {{- if .Values.secret.kubeconfig.create }}
         - mountPath: /armor/kubeconfig
           name: kubeconfig

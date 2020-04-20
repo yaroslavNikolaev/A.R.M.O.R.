@@ -5,7 +5,7 @@
 /modules.xml
 /inspectionProfiles/profiles_settings.xml
 /vcs.xml
-/application.ini
+/application.yaml
 /mapping.json
 /.idea/*
 /azure.ini

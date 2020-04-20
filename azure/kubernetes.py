@@ -19,7 +19,7 @@ class K8Azure(VersionCollector):
 
     def __init__(self, config: Configuration):
         super().__init__(config)
-        self.available_updates = self.template.format(config.az_subscription(), config.az_resourceGroup(), config.aks())
+        self.available_updates = self.template.format(config.az_subscription(), config.az_resource_group(), config.aks())
         self.auth = {"Authorization": "Bearer " + config.az_token(), "Content-type": "application/json"}
 
     def collect(self) -> typing.List[ApplicationVersion]:

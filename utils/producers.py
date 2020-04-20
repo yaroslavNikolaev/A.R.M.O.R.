@@ -109,10 +109,17 @@ class CommonMetricProducer(AbstractMetricProducer):
 
 
 class KubernetesMetricProducer(CommonMetricProducer):
+    k8 = "party3rd.cloud_native.k8"
+    default = "party3rd.cloud_native.kubernetes"
+    cloud_collectors = {
+        "gcp": "gcp.kubernetes.gke",
+        "azure": "azure.kubernetes.aks",
+        "aws": "aws.kubernetes.eks"
+    }
 
-    def __init__(self, cluster: str, factory: CollectorFactory):
-        k8_internal = factory.instantiate_collector("party3rd.cloud_native.k8")
-        k8_external = factory.instantiate_k8_service_collector()
+    def __init__(self, cluster: str, factory: CollectorFactory, cloud: str):
+        k8_internal = factory.instantiate_collector(self.k8)
+        k8_external = factory.instantiate_collector(self.cloud_collectors.get(cloud, self.default))
         super().__init__(cluster, k8_internal, k8_external)
 
     @ttl_cache(ttl=MIN_TTL + 443, maxsize=4)
