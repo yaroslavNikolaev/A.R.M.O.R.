@@ -113,7 +113,7 @@ class KubernetesMetricProducer(CommonMetricProducer):
     default = "party3rd.cloud_native.kubernetes"
     cloud_collectors = {
         "gcp": "gcp.kubernetes.gke",
-        "azure": "azure.kubernetes.aks",
+        "azure": "az.kubernetes.aks",
         "aws": "aws.kubernetes.eks"
     }
 

@@ -1,4 +1,4 @@
-yaml
+PyYAML
 requests
 google
 cachetools
@@ -10,3 +10,5 @@ oauth2client
 google-api-python-client
 google-auth
 google-auth-httplib2
+azure-mgmt-containerservice
+azure-common

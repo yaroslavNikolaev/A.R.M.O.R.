@@ -19,3 +19,4 @@ USER armor
 WORKDIR /armor
 
 ENTRYPOINT python  ./armor.py
+CMD "--help"

@@ -18,7 +18,7 @@ STRUCTURE = '''### Repository structure:
         - configuration.py - contains A.R.M.O.R configuration
         - verifiers.py - contains common classes of verifiers. Main responsibility to highlight that how severe version lag. 
         - producer.py - contains common classes of producers. Main responsibility to provide prometheus client output. 
-    packages gcp,azure,party3rd,aws - contains collectors for external sources.
+    packages gcp,az,party3rd,aws - contains collectors for external sources.
     folder armor-io - contains helm chart for armor\n'''
 
 HOWTO = '''### How to start to work with A.R.M.O.R
@@ -43,7 +43,7 @@ if __name__ == '__main__':
         readme.write(STRUCTURE)
         readme.write(HOWTO)
         readme.write(COLLECTORS)
-        # todo add description to collectors and storages
+        # todo add description to collectors and storages use __doc__
         description = ""
         for key in sorted(factory.collectors.keys()):
             application = key.split(".")[-1]

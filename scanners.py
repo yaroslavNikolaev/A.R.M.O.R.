@@ -2,7 +2,7 @@ import inspect, threading, logging
 from party3rd import *
 from gcp import *
 from aws import *
-from azure import *
+from az import *
 from utils.collectors import *
 from utils.verifiers import *
 from utils.configuration import Configuration

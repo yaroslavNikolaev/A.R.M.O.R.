@@ -42,7 +42,18 @@ spec:
           - containerPort: {{ .Values.port | default 8000}}
             name: http
             protocol: TCP
-        args: []
+        {{- if .Values.gcp }}
+        args:
+          - --gcp_project={{.Values.gcp.gcp_project}}
+          - --gcp_zone={{.Values.gcp.gcp_zone}} {{- end}}
+        {{- if .Values.azure }}
+        args:
+          - --aks={{.Values.azure.aks}}
+          - --az_resourceGroup={{.Values.azure.az_resourceGroup}}
+          - --az_subscription={{.Values.azure.az_subscription}}
+          - --tenant={{.Values.azure.tenant}}
+          - --client={{.Values.azure.client}}
+          - --secret=$secret {{end}}
         resources:
 {{ toYaml .Values.deployment.resources | indent 10}}
         volumeMounts:
@@ -55,17 +66,6 @@ spec:
           name: kubeconfig
           subPath: config
           readOnly: true    {{ end }}
-        {{- if eq .Values.storage  "prometheus"}}
-        livenessProbe:
-          failureThreshold: 15
-          httpGet:
-            port: {{ .Values.port }}
-            path: /metrics
-        readinessProbe:
-          failureThreshold: 10
-          httpGet:
-            port: {{ .Values.port }}
-            path: /metrics         {{ end }}
       dnsPolicy: ClusterFirst
       {{- if .Values.secret.registrykey.create }}
       imagePullSecrets:

@@ -16,8 +16,10 @@ azure = "azure"
 aks = 'aks'
 az_resourceGroup = 'az_resourceGroup'
 az_subscription = 'az_subscription'
-az_token = 'az_token'
-AZURE = [aks, az_resourceGroup, az_subscription, az_token]
+secret = 'secret'
+tenant = 'tenant'
+client = 'client'
+AZURE = [aks, az_resourceGroup, az_subscription, secret, client, tenant]
 
 gcp = "gcp"
 gcp_project = 'gcp_project'
@@ -86,7 +88,9 @@ class Configuration(object):
         azure_group.add_argument("--" + aks, help="Azure Kubernetes service name", type=str)
         azure_group.add_argument("--" + az_resourceGroup, help="Azure Resource group name", type=str)
         azure_group.add_argument("--" + az_subscription, help="Azure Subscription name", type=str)
-        azure_group.add_argument("--" + az_token, help="Azure access token [az account get-access-token]", type=str)
+        azure_group.add_argument("--" + tenant, help="Azure AD tenant", type=str)
+        azure_group.add_argument("--" + client, help="Azure Application client id", type=str)
+        azure_group.add_argument("--" + secret, help="Azure Application secret", type=str)
         # gcp
         gcp_group = parser.add_argument_group(gcp)
         gcp_group.add_argument("--" + gcp_project, help="Gcp project", type=str)
@@ -117,8 +121,14 @@ class Configuration(object):
     def az_subscription(self) -> str:
         return self.__config[azure].get(az_subscription)
 
-    def az_token(self) -> str:
-        return self.__config[azure].get(az_token)
+    def az_tenant(self) -> str:
+        return self.__config[azure].get(tenant)
+
+    def az_client(self) -> str:
+        return self.__config[azure].get(client)
+
+    def az_secret(self) -> str:
+        return self.__config[azure].get(secret)
 
     def gcp_project(self) -> str:
         return self.__config[gcp].get(gcp_project)
