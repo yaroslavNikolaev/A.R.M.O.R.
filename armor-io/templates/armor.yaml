@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.Chart.Name}}
+  namespace: {{ .Values.namespace | default "monitoring"}}
+  annotations:
+    armor.io/party3rd.cloud_native.armor : {{ .Chart.Version }}
+    {{- range $key, $value := .Values.deployment.annotations }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.selector }}
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.selector }}
+        release : {{ .Release.Name}}
+      annotations:
+        {{- if eq .Values.storage  "prometheus" }}
+        prometheus.io/path: /metrics
+        prometheus.io/port: {{ .Values.port }}
+        prometheus.io/scrape: "true"        {{ end }}
+    spec:
+      {{- if .Values.serviceAccount.name }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}       {{- end }}
+      containers:
+      - name: armor
+        {{- if or (.Values.env.normal) (.Values.env.secret) }}
+        env:
+        {{- include "helpers.list-env-variables" . | indent 8 }}
+        {{- end }}
+        image: "{{.Values.image.registry}}:v{{.Chart.Version}}"
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: {{ .Values.port | default 8000}}
+            name: http
+            protocol: TCP
+        args: []
+        resources:
+{{ toYaml .Values.deployment.resources | indent 10}}
+        volumeMounts:
+        - mountPath: /armor/application.ini
+          name: application
+          readOnly: true
+          subPath: application.ini
+        {{- if .Values.secret.kubeconfig.create }}
+        - mountPath: /armor/kubeconfig
+          name: kubeconfig
+          subPath: config
+          readOnly: true    {{ end }}
+        {{- if eq .Values.storage  "prometheus"}}
+        livenessProbe:
+          failureThreshold: 15
+          httpGet:
+            port: {{ .Values.port }}
+            path: /metrics
+        readinessProbe:
+          failureThreshold: 10
+          httpGet:
+            port: {{ .Values.port }}
+            path: /metrics         {{ end }}
+      dnsPolicy: ClusterFirst
+      {{- if .Values.secret.registrykey.create }}
+      imagePullSecrets:
+        - name: registrykey      {{ end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- range $key, $value := .Values.nodeSelector }}
+        {{ $key }}: {{ $value }}
+        {{- end }} {{- end }}
+      tolerations:
+        - operator: "Exists"
+      restartPolicy: Always
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: application
+          name: application
+       {{- if .Values.secret.kubeconfig.create }}
+        - name: kubeconfig
+          secret:
+            defaultMode: 420
+            secretName: kubeconfig         {{ end }}
+      securityContext:
+        fsGroup: 1010
+        runAsUser: 8877
+        runAsNonRoot: true

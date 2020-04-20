@@ -16,3 +16,7 @@ package utils - contains main part of armor framework
     - verifiers.py - contains common classes of verifiers. Main responsibility to highlight that how severe version lag. 
     - producer.py - contains common classes of producers. Main responsibility to provide prometheus client output. 
 packages gcp,azure,party3rd,aws - contains collectors for external sources.
+
+
+
+In order to override: helm template armor --values gcp.yaml 

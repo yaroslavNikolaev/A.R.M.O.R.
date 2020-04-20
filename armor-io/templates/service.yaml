@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    {{- range $key, $value := .Values.service.annotations }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+  name: "{{.Chart.Name}}-service"
+  namespace: {{ .Values.namespace }}
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+  - protocol: "TCP"
+    port: {{ .Values.port }}
+  selector:
+    app: {{ .Values.selector }}
+  type: LoadBalancer

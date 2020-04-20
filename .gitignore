@@ -9,6 +9,8 @@
 /mapping.json
 /.idea/*
 /azure.ini
-/armor/templates/config
+/armor-io/templates/config
 /kubeconfig
 /k8config
+/gcp.yaml
+/azure.yaml

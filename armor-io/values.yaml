@@ -1,0 +1,37 @@
+namespace: monitoring
+port: 8000
+env:
+  # non sensitive variables
+  normal:
+  # sensitive variables
+  secret:
+deployment:
+  annotations: {}
+  resources:
+    limits:
+      cpu: 200m
+      memory: 200Mi
+    requests:
+      cpu: 200m
+      memory: 200Mi
+service:
+  annotations: {}
+image:
+  registry: scyther/armor
+selector: armor.io
+serviceAccount:
+  create: true
+  name: armor
+rbac:
+  create: true
+  role:
+    name: armor
+  binding:
+    name: armor
+secret:
+  kubeconfig:
+    create: false
+  registrykey:
+    create: false
+storage: "prometheus"
+nodeSelector: {}
