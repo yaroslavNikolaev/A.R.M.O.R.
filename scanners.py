@@ -27,7 +27,7 @@ class CollectorFactory(object):
             logging.warning(f"Be aware, Application collector is not exist for {application}. Mock will be used")
             return MockCollector(self.config)
         metaclass = self.collectors[application]
-        is_constant = ConstantVersionCollector.__name__ in str(metaclass)
+        is_constant = ConstantVersionsCollector.__name__ in str(metaclass)
         # do they have in python normal memory model?
         if application in self.collectors_inst:
             return self.collectors_inst[application]

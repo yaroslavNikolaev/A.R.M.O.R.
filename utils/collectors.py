@@ -41,20 +41,20 @@ class MavenCentralVersionCollector(VersionCollector, abc.ABC):
         return result
 
 
-class ConstantVersionCollector(VersionCollector):
+class ConstantVersionsCollector(VersionCollector):
 
     @staticmethod
     def get_application_name() -> str:
         return "constant"
 
-    version: ApplicationVersion
+    versions: typing.List[ApplicationVersion]
 
-    def __init__(self, config: Configuration, version: ApplicationVersion):
+    def __init__(self, config: Configuration, versions: typing.List[ApplicationVersion]):
         super().__init__(config)
-        self.version = version
+        self.versions = versions
 
     def collect(self) -> typing.List[ApplicationVersion]:
-        return [self.version]
+        return self.versions
 
 
 class GitHubVersionCollector(VersionCollector, abc.ABC):

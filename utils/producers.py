@@ -151,7 +151,7 @@ class ApplicationMetricProducer(AbstractMetricProducer, ABC):
     def _collect_metrics(self) -> typing.List[Metric]:
         result = []
         for application_version in self.versions:
-            internal = self.factory.instantiate_collector(self.constant_version_collector, application_version)
+            internal = self.factory.instantiate_collector(self.constant_version_collector, [application_version])
             external = self.factory.instantiate_collector(self.application)
             result += CommonMetricProducer(self.cluster, internal, external)._collect_metrics()
         return result
