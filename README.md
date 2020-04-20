@@ -1,10 +1,10 @@
 ## A.R.M.O.R. - Altered-Reality Monitoring and Operational Response 
 
-###Mission
+### Mission
     Detect difference between current version of installed software and the newest one.
     ARMOR is designed to help developers and devops to keep application up to date.
     ARMOR can support any kind of storage in order to persist state of cluster
-###Repository structure: 
+### Repository structure: 
     armor.py - entry endpoint. 
     scanners.py - contains classes which relay on reflection to collect set of 
     mutator.py - simple application to annotate your k8 cluster and check how A.R.M.O.R works. 
@@ -20,7 +20,7 @@
     1. You can take default helm chart or override default values with our own values file. 
     In order to test: helm template armor-io --values gcp.yaml 
     2. Deploy to your central cluster or to 
-###ARMOR supports following collectors:
+### ARMOR supports following collectors:
 <table style="width:100%">  <tr>    <th>Application</th>    <th>Armor annotation key</th>    <th>Description</th>  </tr><tr>    <th>aks</th>    <th>armor.io/azure.kubernetes.aks</th>    <th></th>  </tr>
 <tr>    <th>memorystore</th>    <th>armor.io/gcp.c_plus_clients.memorystore</th>    <th></th>  </tr>
 <tr>    <th>bigtable</th>    <th>armor.io/gcp.java_clients.bigtable</th>    <th></th>  </tr>
@@ -60,5 +60,5 @@
 <tr>    <th>mock</th>    <th>armor.io/utils.collectors.mock</th>    <th></th>  </tr>
 </table> 
 
-###ARMOR supports following storages: 
+### ARMOR supports following storages: 
 - Prometheus 
