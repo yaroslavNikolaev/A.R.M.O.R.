@@ -18,5 +18,5 @@ RUN chmod -R 740 /armor
 USER armor
 WORKDIR /armor
 
-ENTRYPOINT python  ./armor.py
-CMD "--help"
+ENTRYPOINT ["python" , "./armor.py"]
+CMD ["-h"]

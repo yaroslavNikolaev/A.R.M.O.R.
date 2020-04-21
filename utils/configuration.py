@@ -58,6 +58,8 @@ class Configuration(object):
                 if group is None:
                     self.__config[arg] = str(dict_args[arg])
                 else:
+                    if group not in self.__config:
+                        self.__config[group] = dict()
                     self.__config[group][arg] = str(dict_args[arg])
 
     def __get_group_by_arg(self, arg: str):

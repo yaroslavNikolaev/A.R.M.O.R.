@@ -48,12 +48,12 @@ spec:
           - --gcp_zone={{.Values.gcp.gcp_zone}} {{- end}}
         {{- if .Values.azure }}
         args:
-          - --aks={{.Values.azure.aks}}
-          - --az_resourceGroup={{.Values.azure.az_resourceGroup}}
-          - --az_subscription={{.Values.azure.az_subscription}}
-          - --tenant={{.Values.azure.tenant}}
-          - --client={{.Values.azure.client}}
-          - --secret=$secret {{end}}
+          - "--aks={{.Values.azure.aks}}"
+          - "--az_resourceGroup={{.Values.azure.az_resourceGroup}}"
+          - "--az_subscription={{.Values.azure.az_subscription}}"
+          - "--tenant={{.Values.azure.tenant}}"
+          - "--client={{.Values.azure.client}}"
+          - "--secret=$(secret)" {{end}}
         resources:
 {{ toYaml .Values.deployment.resources | indent 10}}
         volumeMounts:
