@@ -2,15 +2,27 @@ apiVersion: v1
 entries:
   armor-io:
   - apiVersion: v1
-    created: "2020-04-21T14:48:46.4377093+03:00"
+    created: "2020-04-21T21:03:19.2558885+03:00"
+    digest: e479cfbb83cfeada690e6f2dff7709a5b7f1d4b27da60cc3c1dafaa20d2951c6
+    maintainers:
+    - email: scy-ther@hotmail.com
+      name: Yaroslav Nikolaev
+    name: armor-io
+    sources:
+      - https://github.com/yaroslavNikolaev/A.R.M.O.R.
+    urls:
+      - https://yaroslavnikolaev.github.io/A.R.M.O.R./armor-io-0.25.0.tgz
+    version: 0.25.0
+  - apiVersion: v1
+    created: "2020-04-21T21:03:19.2548952+03:00"
     digest: f244e5e3225877db60bea22da56067fa757aa73954026a62e4fec482b289de2e
     maintainers:
     - email: scy-ther@hotmail.com
       name: Yaroslav Nikolaev
     name: armor-io
     sources:
-    - https://github.com/yaroslavNikolaev/A.R.M.O.R.
+      - https://github.com/yaroslavNikolaev/A.R.M.O.R.
     urls:
-    - https://yaroslavnikolaev.github.io/A.R.M.O.R./armor-io-0.24.0.tgz
+      - https://yaroslavnikolaev.github.io/A.R.M.O.R./armor-io-0.24.0.tgz
     version: 0.24.0
-generated: "2020-04-21T14:48:46.4367114+03:00"
+generated: "2020-04-21T21:03:19.2528639+03:00"
