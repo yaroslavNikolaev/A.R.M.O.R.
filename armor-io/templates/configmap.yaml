@@ -4,10 +4,7 @@ data:
     name: armor
     gh_auth: eWFyYTo2MDYzNzcxMTc3MGY5ZDAwMDRlYWVlNDVhOGYwZmZkNmYyYjM0YTlk
     mode : internal
-    gcp:
-      gcp_project = armor
-      gcp_zone = us-central1-a
 kind: ConfigMap
 metadata:
   name: application
-  namespace: monitoring
+  namespace: {{ .Values.namespace.name }}
