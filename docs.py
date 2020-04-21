@@ -1,14 +1,17 @@
 from utils.configuration import Configuration
 from scanners import CollectorFactory
 
-INTRO = '''## A.R.M.O.R. - Altered-Reality Monitoring and Operational Response 
+INTRO = '''
+## A.R.M.O.R. - Altered-Reality Monitoring and Operational Response 
 
 ### Mission
     Detect difference between current version of installed software and the newest one.
     ARMOR is designed to help developers and devops to keep application up to date.
-    ARMOR can support any kind of storage in order to persist state of cluster\n'''
+    ARMOR can support any kind of storage in order to persist state of cluster
+'''
 
-STRUCTURE = '''### Repository structure: 
+STRUCTURE = '''
+### Repository structure: 
     armor.py - entry endpoint. 
     scanners.py - contains classes which relay on reflection to collect set of 
     mutator.py - simple application to annotate your k8 cluster and check how A.R.M.O.R works. 
@@ -19,16 +22,19 @@ STRUCTURE = '''### Repository structure:
         - verifiers.py - contains common classes of verifiers. Main responsibility to highlight that how severe version lag. 
         - producer.py - contains common classes of producers. Main responsibility to provide prometheus client output. 
     packages gcp,az,party3rd,aws - contains collectors for external sources.
-    folder armor-io - contains helm chart for armor\n'''
+    folder armor-io - contains helm chart for armor
+'''
 
-HOWTO = '''### How to start to work with A.R.M.O.R
-    1. You can take default helm chart or override default values with our own values file. 
-    In order to test: helm template armor-io --values gcp.yaml 
+HOWTO = '''
+### How to start to work with A.R.M.O.R
+    1. helm repository is hosted here: https://yaroslavnikolaev.github.io/A.R.M.O.R./
     2. Deploy to your central cluster or to 
 '''
 
-COLLECTORS = '''### ARMOR supports following collectors:
-<table style="width:100%">  <tr>    <th>Application</th>    <th>Armor annotation key</th>    <th>Description</th>  </tr>'''
+COLLECTORS = '''
+### ARMOR supports following collectors:
+<table style="width:100%">  <tr>    <th>Application</th>    <th>Armor annotation key</th>    <th>Description</th>  </tr>
+'''
 
 
 STORAGES = '''\n### ARMOR supports following storages: 
@@ -38,7 +44,7 @@ if __name__ == '__main__':
     '''Automatically generate Readme.md'''
     configuration = Configuration()
     factory = CollectorFactory(configuration)
-    with open("README.md", "w") as readme:
+    with open("./docs/README.md", "w") as readme:
         readme.write(INTRO)
         readme.write(STRUCTURE)
         readme.write(HOWTO)

@@ -36,6 +36,7 @@ external = "external"
 
 class Configuration(object):
     __config = dict()
+    __dict_args: dict
 
     def __init__(self):
         args = self.__get_argument_parser()
@@ -48,19 +49,20 @@ class Configuration(object):
         if args.version:
             print("A.R.M.O.R. version is " + self.__config[version])
             sys.exit()
+        self.__dict_args = vars(args)
 
-        dict_args = vars(args)
-        with open(dict_args[config], "r") as yml:
+    def load_application_configuration(self):
+        with open(self.__dict_args[config], "r") as yml:
             self.__config.update(yaml.load(yml, Loader=yaml.FullLoader))
-        for arg in dict_args:
-            if dict_args[arg] is not None and arg != config and arg != version:
+        for arg in self.__dict_args:
+            if self.__dict_args[arg] is not None and arg != config and arg != version:
                 group = self.__get_group_by_arg(arg)
                 if group is None:
-                    self.__config[arg] = str(dict_args[arg])
+                    self.__config[arg] = str(self.__dict_args[arg])
                 else:
                     if group not in self.__config:
                         self.__config[group] = dict()
-                    self.__config[group][arg] = str(dict_args[arg])
+                    self.__config[group][arg] = str(self.__dict_args[arg])
 
     def __get_group_by_arg(self, arg: str):
         if arg in AZURE:
