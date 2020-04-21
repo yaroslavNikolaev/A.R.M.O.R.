@@ -6,7 +6,7 @@ metadata:
   annotations:
     armor.io/party3rd.cloud_native.armor : {{ .Chart.Version }}
     {{- range $key, $value := .Values.deployment.annotations }}
-    {{ $key }}: {{ $value }}
+    {{ $key }}: {{ $value | quote }}
     {{- end }}
 spec:
   selector:
@@ -73,7 +73,7 @@ spec:
       {{- if .Values.nodeSelector }}
       nodeSelector:
         {{- range $key, $value := .Values.nodeSelector }}
-        {{ $key }}: {{ $value }}
+        {{ $key }}: {{ $value | quote }}
         {{- end }} {{- end }}
       tolerations:
         - operator: "Exists"
