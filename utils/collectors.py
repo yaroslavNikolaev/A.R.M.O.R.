@@ -110,11 +110,15 @@ class GitHubVersionCollector(VersionCollector, abc.ABC):
         app = self.get_application_name()
         for release in releases:
             try:
-                result.append(ApplicationVersion(app, release['tag_name']))
+                result.append(self.release_to_version(release['tag_name']))
             except (ValueError, TypeError, IndexError):
                 logging.warning(f"Release {release['tag_name']} has incorrect version structure for GH {app}")
                 continue
         return result
+
+    def release_to_version(self, release: str) -> ApplicationVersion:
+        app = self.get_application_name()
+        return ApplicationVersion(app, release)
 
 
 class MockCollector(VersionCollector):
