@@ -1,5 +1,8 @@
-namespace: monitoring
+namespace:
+  create: true
+  name: monitoring
 port: 8000
+mode : internal
 env:
   # non sensitive variables
   normal:

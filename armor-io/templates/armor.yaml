@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{.Chart.Name}}
-  namespace: {{ .Values.namespace | default "monitoring"}}
+  namespace: {{ .Values.namespace.name }}
   annotations:
     armor.io/party3rd.cloud_native.armor : {{ .Chart.Version }}
     {{- range $key, $value := .Values.deployment.annotations }}
@@ -61,7 +61,7 @@ spec:
           name: application
           readOnly: true
           subPath: application.yaml
-        {{- if .Values.secret.kubeconfig.create }}
+        {{- if eq .Values.mode "external" }}
         - mountPath: /armor/kubeconfig
           name: kubeconfig
           subPath: config
@@ -83,7 +83,7 @@ spec:
             defaultMode: 420
             name: application
           name: application
-       {{- if .Values.secret.kubeconfig.create }}
+       {{- if eq .Values.mode "external" }}
         - name: kubeconfig
           secret:
             defaultMode: 420

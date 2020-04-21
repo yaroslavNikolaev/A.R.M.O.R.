@@ -6,7 +6,7 @@ metadata:
     {{ $key }}: {{ $value }}
     {{- end }}
   name: "{{.Chart.Name}}-service"
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace.name }}
 spec:
   externalTrafficPolicy: Cluster
   ports:
