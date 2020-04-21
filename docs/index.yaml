@@ -8,7 +8,9 @@ entries:
     - email: scy-ther@hotmail.com
       name: Yaroslav Nikolaev
     name: armor-io
+    sources:
+      - https://github.com/yaroslavNikolaev/A.R.M.O.R.
     urls:
-    - armor-io-0.24.0.tgz
+    - https://yaroslavnikolaev.github.io/A.R.M.O.R./armor-io-0.24.0.tgz
     version: 0.24.0
 generated: "2020-04-21T14:48:46.4367114+03:00"
