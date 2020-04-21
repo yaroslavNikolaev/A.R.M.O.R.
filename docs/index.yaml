@@ -9,7 +9,7 @@ entries:
       name: Yaroslav Nikolaev
     name: armor-io
     sources:
-      - https://github.com/yaroslavNikolaev/A.R.M.O.R.
+    - https://github.com/yaroslavNikolaev/A.R.M.O.R.
     urls:
     - https://yaroslavnikolaev.github.io/A.R.M.O.R./armor-io-0.24.0.tgz
     version: 0.24.0
