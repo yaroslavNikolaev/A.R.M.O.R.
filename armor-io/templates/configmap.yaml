@@ -1,9 +1,19 @@
 apiVersion: v1
 data:
   application.yaml: |-
-    name: armor
     gh_auth: eWFyYTo2MDYzNzcxMTc3MGY5ZDAwMDRlYWVlNDVhOGYwZmZkNmYyYjM0YTlk
-    mode : internal
+    mode : {{ .Values.mode | quote }}
+    {{- if .Values.azure }}
+    azure:
+      aks: {{ .Values.azure.aks }}
+      az_resourceGroup: {{ .Values.azure.az_resourceGroup }}
+      az_subscription: {{ .Values.azure.az_subscription }}
+      tenant: {{ .Values.azure.tenant }}
+      client: {{ .Values.azure.client }} {{- end }}
+    {{- if .Values.gcp }}
+    gcp:
+      gcp_project: {{ .Values.gcp.gcp_project }}
+      gcp_zone: {{ .Values.gcp.gcp_zone }} {{- end }}
 kind: ConfigMap
 metadata:
   name: application

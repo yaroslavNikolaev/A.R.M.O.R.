@@ -14,7 +14,7 @@ class K8Azure(VersionCollector):
 
     def __init__(self, config: Configuration):
         super().__init__(config)
-        credentials = ServicePrincipalCredentials(config.az_client(), config.az_secret(), tenant=config.az_tenant())
+        credentials = ServicePrincipalCredentials(config.az_client(), config.secret(), tenant=config.az_tenant())
         self.client = ContainerServiceClient(credentials, config.az_subscription())
         self.rg = config.az_resource_group()
         self.aks = config.aks()

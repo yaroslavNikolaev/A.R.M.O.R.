@@ -84,6 +84,7 @@ class Configuration(object):
         parser.add_argument("--" + port, help="A.R.M.O.R. port to use", type=int)
         parser.add_argument("--" + k8config, help="K8 config file location", type=str)
         parser.add_argument("--" + gh, help="GH basic auth token base64(username:token)", type=str)
+        parser.add_argument("--" + secret, help="Secret for azure and etc", type=str)
         parser.add_argument("--" + mode, type=str, choices=[internal, external],
                             help="Armor mode. Internal means use SA to login , External means use config")
 
@@ -94,7 +95,7 @@ class Configuration(object):
         azure_group.add_argument("--" + az_subscription, help="Azure Subscription name", type=str)
         azure_group.add_argument("--" + tenant, help="Azure AD tenant", type=str)
         azure_group.add_argument("--" + client, help="Azure Application client id", type=str)
-        azure_group.add_argument("--" + secret, help="Azure Application secret", type=str)
+
         # gcp
         gcp_group = parser.add_argument_group(gcp)
         gcp_group.add_argument("--" + gcp_project, help="Gcp project", type=str)
@@ -113,6 +114,9 @@ class Configuration(object):
     def port(self) -> int:
         return int(self.__config[port])
 
+    def secret(self) -> str:
+        return self.__config.get(secret)
+
     def internal(self) -> bool:
         return self.__config[mode] == internal
 
@@ -130,9 +134,6 @@ class Configuration(object):
 
     def az_client(self) -> str:
         return self.__config[azure].get(client)
-
-    def az_secret(self) -> str:
-        return self.__config[azure].get(secret)
 
     def gcp_project(self) -> str:
         return self.__config[gcp].get(gcp_project)
