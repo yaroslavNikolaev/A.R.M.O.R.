@@ -3,7 +3,7 @@ kind: Service
 metadata:
   annotations:
     {{- range $key, $value := .Values.service.annotations }}
-    {{ $key }}: {{ $value }}
+    {{ $key }}: "{{ $value }}"
     {{- end }}
   name: "{{.Chart.Name}}-service"
   namespace: {{ .Values.namespace.name }}

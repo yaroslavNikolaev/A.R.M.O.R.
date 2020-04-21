@@ -24,8 +24,8 @@ spec:
         release : {{ .Release.Name}}
       annotations:
         {{- if eq .Values.storage  "prometheus" }}
-        prometheus.io/path: /metrics
-        prometheus.io/port: {{ .Values.port }}
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "{{ .Values.port }}"
         prometheus.io/scrape: "true"        {{ end }}
     spec:
       {{- if .Values.serviceAccount.name }}
