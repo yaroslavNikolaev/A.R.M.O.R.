@@ -67,8 +67,6 @@ spec:
         {{- range $key, $value := .Values.nodeSelector }}
         {{ $key }}: {{ $value | quote }}
         {{- end }} {{- end }}
-      tolerations:
-        - operator: "Exists"
       restartPolicy: Always
       volumes:
         - configMap:

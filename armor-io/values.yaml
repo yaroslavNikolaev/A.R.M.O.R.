@@ -18,6 +18,7 @@ deployment:
       cpu: 200m
       memory: 200Mi
 service:
+  create: true
   annotations: {}
 image:
   registry: scyther/armor
