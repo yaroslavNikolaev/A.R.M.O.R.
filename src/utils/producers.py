@@ -13,17 +13,14 @@ MIN_TTL = 601
 class Metric(object):
     source: ApplicationVersion
     target: ApplicationVersion
-    channel: Channel
     severity: Severity
     diff: int
 
-    def __init__(self, source: ApplicationVersion, channel: Channel, diff: int, severity: Severity):
+    def __init__(self, source: ApplicationVersion, target: ApplicationVersion, severity: Severity, diff):
         self.source = source
+        self.target = target
         self.severity = severity
-        self.channel = channel
         self.diff = diff
-        self.target = copy.copy(source)
-        self.target.set_channel_version(channel, self.target.get_channel_version(channel) + diff)
 
 
 class AbstractMetricProducer(ABC):
@@ -77,35 +74,36 @@ class CommonMetricProducer(AbstractMetricProducer):
             result += self._extract_metrics(internal_version, external_versions)
         return result
 
-    def _extract_metrics(self, app_version: ApplicationVersion, versions: typing.Iterator[ApplicationVersion]) -> \
+    def _extract_metrics(self, app_version: ApplicationVersion, versions: typing.List[ApplicationVersion]) -> \
             typing.List[Metric]:
-        diff = self.exctract_differences(app_version, versions)
+        diff = self.extract_channel_top_versions(app_version, versions)
         result = []
-        for channel in CHANNELS:
-            value = diff.get_channel_version(channel)
+        for channel, channel_version in diff.items():
+            value = channel_version.get_channel_version(channel) - app_version.get_channel_version(channel)
             severity = self.severity_manager.get_severity(app_version, channel, value)
             if severity == Severity.NONE:
                 continue
-            metric = Metric(app_version, channel, value, severity)
+            metric = Metric(app_version, channel_version, severity, value)
             result.append(metric)
         return result
 
-    def exctract_differences(self, version_to_check: ApplicationVersion,
-                             all_versions: typing.Iterator[ApplicationVersion]) -> ApplicationVersion:
-        result = copy.copy(version_to_check)
+    @staticmethod
+    def extract_channel_top_versions(version_to_check: ApplicationVersion,
+                                     all_versions: typing.List[ApplicationVersion]) \
+            -> typing.Dict[Channel, ApplicationVersion]:
+        result = dict()
         for version in all_versions:
-            major_match = version.major == version_to_check.major
-            minor_match = version.minor == version_to_check.minor
-            release_match = version.release == version_to_check.release
-            if version.major > result.major:
-                result.major = version.major
-            if major_match and version.minor > result.minor:
-                result.minor = version.minor
-            if major_match and minor_match and version.release > result.release:
-                result.release = version.release
-            if major_match and minor_match and release_match and version.build > result.build:
-                result.build = version.build
-        return result - version_to_check
+            diff = version - version_to_check
+            top_channel = diff.get_first_positive_valid_channel()
+            if top_channel is None:
+                continue
+            if top_channel not in result:
+                result[top_channel] = version
+            else:
+                diff = version - result[top_channel]
+                if diff.get_first_positive_valid_channel() is not None:
+                    result[top_channel] = version
+        return result
 
 
 class KubernetesMetricProducer(CommonMetricProducer):

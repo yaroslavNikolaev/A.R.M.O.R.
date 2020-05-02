@@ -73,6 +73,27 @@ class ApplicationVersion(object):
     def resource_definition(self):
         return self.resource + " : " + self.resource_name
 
+    def get_first_positive_valid_channel(self):
+        result = None
+        for channel in CHANNELS:
+            value = self.get_channel_version(channel)
+            if value == 0:
+                continue
+
+            if value > 0:
+                result = channel
+            break
+        return result
+
+    def __eq__(self, other):
+        result = True
+        for channel in CHANNELS:
+            result = result and self.get_channel_version(channel) == other.get_channel_version(channel)
+        return result
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
 CHANNELS = [Channel.MAJOR, Channel.MINOR, Channel.RELEASE, Channel.BUILD]
 ZERO_VERSION = ApplicationVersion("", "v0.0.0")
