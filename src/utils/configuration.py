@@ -1,5 +1,6 @@
 import sys, logging, yaml
 from argparse import ArgumentParser
+from os import path
 
 K8_CONFIG_DEFAULT_LOCATION = "./armor-io/templates/config"
 
@@ -10,16 +11,16 @@ port = 'port'
 k8config = 'k8config'
 gh = 'gh_auth'
 mode = 'mode'
-COMMON = [version, name, port, k8config, mode]
+secret = 'secret'
+COMMON = [version, name, port, k8config, mode, secret]
 
 azure = "azure"
 aks = 'aks'
 az_resourceGroup = 'az_resourceGroup'
 az_subscription = 'az_subscription'
-secret = 'secret'
 tenant = 'tenant'
 client = 'client'
-AZURE = [aks, az_resourceGroup, az_subscription, secret, client, tenant]
+AZURE = [aks, az_resourceGroup, az_subscription, client, tenant]
 
 gcp = "gcp"
 gcp_project = 'gcp_project'
@@ -52,8 +53,10 @@ class Configuration(object):
         self.__dict_args = vars(args)
 
     def load_application_configuration(self):
-        with open(self.__dict_args[config], "r") as yml:
-            self.__config.update(yaml.load(yml, Loader=yaml.FullLoader))
+        application_config = self.__dict_args[config]
+        if path.exists(application_config):
+            with open(application_config, "r") as yml:
+                self.__config.update(yaml.load(yml, Loader=yaml.FullLoader))
         for arg in self.__dict_args:
             if self.__dict_args[arg] is not None and arg != config and arg != version:
                 group = self.__get_group_by_arg(arg)

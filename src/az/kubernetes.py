@@ -25,7 +25,6 @@ class K8Azure(VersionCollector):
         for release in res.control_plane_profile.upgrades:
             release_version = ApplicationVersion("kubernetes", release.kubernetes_version, "node", "k8")
             result += [release_version]
-            break
         return result
 
     @staticmethod

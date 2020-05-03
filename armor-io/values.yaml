@@ -32,7 +32,7 @@ rbac:
     name: armor
   binding:
     name: armor
-secret:
+fileSecret:
   kubeconfig:
     create: false
   registrykey:

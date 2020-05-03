@@ -59,7 +59,7 @@ spec:
           subPath: config
           readOnly: true    {{ end }}
       dnsPolicy: ClusterFirst
-      {{- if .Values.secret.registrykey.create }}
+      {{- if .Values.fileSecret.registrykey.create }}
       imagePullSecrets:
         - name: registrykey      {{ end }}
       {{- if .Values.nodeSelector }}
