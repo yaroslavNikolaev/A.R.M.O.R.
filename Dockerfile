@@ -9,7 +9,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.c
 RUN virtualenv -p python3.7 /env
 ENV VIRTUAL_ENV /env
 ENV PATH /env/bin:$PATH
-RUN pip install -r /armor/requirements.txt
+RUN pip install -r /armor/src/requirements.txt
 
 RUN groupadd -g 1010 armor
 RUN useradd -g armor -u 8877 armor -m

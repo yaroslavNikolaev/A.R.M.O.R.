@@ -43,9 +43,9 @@ class Configuration(object):
         args = self.__get_argument_parser()
         # read arguments from the command line and show help if requested[main purpose]!
         args = args.parse_args()
-        with open('./armor-io/values.yaml', "r") as yml:
+        with open('../armor-io/values.yaml', "r") as yml:
             self.__config.update(yaml.load(yml, Loader=yaml.FullLoader))
-        with open('./armor-io/Chart.yaml', "r") as yml:
+        with open('../armor-io/Chart.yaml', "r") as yml:
             self.__config.update(yaml.load(yml, Loader=yaml.FullLoader))
         if args.version:
             print("A.R.M.O.R. version is " + self.__config[version])
