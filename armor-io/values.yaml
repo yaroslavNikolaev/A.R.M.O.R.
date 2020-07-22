@@ -1,13 +1,13 @@
 namespace:
   create: true
-  name: monitoring
+  name: saasops
 port: 8000
 mode : internal
 env:
   # non sensitive variables
-  normal:
+  normal: {}
   # sensitive variables
-  secret:
+  secret: {}
 deployment:
   annotations: {}
   resources:

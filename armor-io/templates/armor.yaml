@@ -44,8 +44,20 @@ spec:
             protocol: TCP
         args:
           - "--name={{ .Values.name | default .Chart.Name}}"
+          - "--mode={{ .Values.mode }}"
+          {{- if .Values.env.secret.gh}}
+          -  "--gh_auth={{ .Values.env.secret.gh}}" {{end}}
           {{- if .Values.env.secret.secret}}
-          - "--secret=$(secret)" {{end}}
+          - "--secret={{ .Values.env.secret.secret}}" {{end}}
+          {{- if .Values.gcp}}
+          - "--gcp_project={{ .Values.gcp.project }}"
+          - "--gcp_zone={{ .Values.gcp.zone }}" {{end}}
+          {{- if .Values.azure}}
+          - "--aks={{ .Values.azure.aks }}"
+          - "--az_resourceGroup={{ .Values.azure.rg }}"
+          - "--az_subscription={{ .Values.azure.subscription }}"
+          - "--tenant={{ .Values.azure.tenant }}"
+          - "--client={{ .Values.azure.client }}" {{end}}
         resources:
 {{ toYaml .Values.deployment.resources | indent 10}}
         volumeMounts:
